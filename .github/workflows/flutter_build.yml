@@ -39,6 +39,10 @@ jobs:
             --project-name=zsolt_ai_pro \
             --org=hu.zsoltproai
 
+      - name: Remove Default Widget Test
+        run: |
+          rm -rf test
+
       - name: Install Packages
         run: flutter pub get
 
