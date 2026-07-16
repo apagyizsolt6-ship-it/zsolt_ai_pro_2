@@ -1,10 +1,10 @@
-/// ===========================================
-/// ZSOLT AI PRO
-/// Version: v1.0.0
-/// File: app_spacing.dart
-/// ===========================================
-
-library app_spacing;
+/*
+===========================================
+ZSOLT AI PRO
+Version: v1.0.0
+File: app_spacing.dart
+===========================================
+*/
 
 class AppSpacing {
   AppSpacing._();
