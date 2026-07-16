@@ -1,4 +1,15 @@
+/*
+===========================================
+ZSOLT AI PRO
+Version: v1.1.0
+File: app.dart
+===========================================
+*/
+
 import 'package:flutter/material.dart';
+
+import 'core/theme/app_theme.dart';
+import 'screens/splash_screen.dart';
 
 class ZsoltAiProApp extends StatelessWidget {
   const ZsoltAiProApp({super.key});
@@ -6,23 +17,12 @@ class ZsoltAiProApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'ZSOLT AI PRO',
-      theme: ThemeData(
-        colorSchemeSeed: Colors.blue,
-        useMaterial3: true,
-      ),
-      home: const Scaffold(
-        body: Center(
-          child: Text(
-            'ZSOLT AI PRO 2',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
+      debugShowCheckedModeBanner: false,
+
+      theme: AppTheme.darkTheme,
+
+      home: const SplashScreen(),
     );
   }
 }
