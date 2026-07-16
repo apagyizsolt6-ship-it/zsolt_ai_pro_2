@@ -1,12 +1,16 @@
+/*
+===========================================
+ZSOLT AI PRO
+Version: v1.1.0
+File: splash_screen.dart
+===========================================
+*/
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-/// ===========================================
-/// ZSOLT AI PRO
-/// Version: v1.0.0
-/// File: splash_screen.dart
-/// ===========================================
+import 'main_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -41,9 +45,10 @@ class _SplashScreenState extends State<SplashScreen>
       () {
         if (!mounted) return;
 
-        Navigator.pushReplacementNamed(
-          context,
-          '/home',
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => const MainScreen(),
+          ),
         );
       },
     );
@@ -66,8 +71,8 @@ class _SplashScreenState extends State<SplashScreen>
             mainAxisSize: MainAxisSize.min,
             children: const [
               Icon(
-                Icons.sports_soccer,
-                color: Colors.blue,
+                Icons.sports_soccer_rounded,
+                color: Color(0xFF1565FF),
                 size: 90,
               ),
               SizedBox(height: 24),
