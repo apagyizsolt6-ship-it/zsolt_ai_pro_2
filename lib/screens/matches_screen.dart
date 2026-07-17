@@ -1,12 +1,14 @@
 /*
 ===========================================
 ZSOLT AI PRO
-Version: v1.0.3
+Version: v1.0.4
 File: matches_screen.dart
 ===========================================
 */
 
 import 'package:flutter/material.dart';
+
+import '../widgets/matches/match_card.dart';
 
 class MatchesScreen extends StatelessWidget {
   const MatchesScreen({super.key});
@@ -113,7 +115,9 @@ class MatchesScreen extends StatelessWidget {
                     child: Text(
                       days[index],
                       style: TextStyle(
-                        color: selected ? Colors.white : Colors.white70,
+                        color: selected
+                            ? Colors.white
+                            : Colors.white70,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -122,38 +126,36 @@ class MatchesScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 24),
 
             Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(
-                      Icons.sports_score_rounded,
-                      size: 90,
-                      color: Colors.white24,
-                    ),
-                    SizedBox(height: 20),
-                    Text(
-                      "Nincs betöltött mérkőzés",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      "A következő lépésben\nprémium meccskártyák érkeznek.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white54,
-                        height: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
+              child: ListView(
+                children: const [
+                  MatchCard(
+                    league: "Premier League",
+                    homeTeam: "Liverpool",
+                    awayTeam: "Manchester City",
+                    kickoff: "18:30",
+                    aiScore: 91,
+                    isValueBet: true,
+                  ),
+
+                  MatchCard(
+                    league: "La Liga",
+                    homeTeam: "Real Madrid",
+                    awayTeam: "Barcelona",
+                    kickoff: "21:00",
+                    aiScore: 88,
+                  ),
+
+                  MatchCard(
+                    league: "Serie A",
+                    homeTeam: "Inter",
+                    awayTeam: "Juventus",
+                    kickoff: "20:45",
+                    aiScore: 85,
+                  ),
+                ],
               ),
             ),
           ],
