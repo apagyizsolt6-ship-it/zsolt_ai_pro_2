@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// ===========================================
 /// ZSOLT AI PRO
-/// Version: v1.0.0
+/// Version: v1.0.1
 /// File: next_matches_card.dart
 /// ===========================================
 
@@ -12,7 +12,7 @@ class NextMatchesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 6,
+      elevation: 8,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
       ),
@@ -20,60 +20,126 @@ class NextMatchesCard extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Row(
+          children: [
+            const Row(
               children: [
                 Icon(
                   Icons.sports_soccer,
                   color: Color(0xFF1565FF),
+                  size: 28,
                 ),
-                SizedBox(width: 8),
+                SizedBox(width: 10),
                 Text(
                   'KÖVETKEZŐ MÉRKŐZÉSEK',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
+                    letterSpacing: 0.6,
                   ),
                 ),
               ],
             ),
 
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: CircleAvatar(
-                child: Icon(Icons.shield),
-              ),
-              title: Text('Manchester City'),
-              subtitle: Text('Real Madrid'),
-              trailing: Text(
-                '20:45',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+            _matchTile(
+              league: 'Premier League',
+              home: 'Manchester City',
+              away: 'Real Madrid',
+              time: '20:45',
             ),
 
-            Divider(),
+            const Divider(height: 28),
 
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: CircleAvatar(
-                child: Icon(Icons.shield),
-              ),
-              title: Text('Barcelona'),
-              subtitle: Text('Liverpool'),
-              trailing: Text(
-                '21:00',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
+            _matchTile(
+              league: 'Bajnokok Ligája',
+              home: 'Barcelona',
+              away: 'Liverpool',
+              time: '21:00',
+            ),
+
+            const SizedBox(height: 18),
+
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () {},
+                icon: const Icon(Icons.arrow_forward),
+                label: const Text('Összes meccs'),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _matchTile({
+    required String league,
+    required String home,
+    required String away,
+    required String time,
+  }) {
+    return Row(
+      children: [
+        Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: const Color(0xFF1565FF).withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: const Icon(
+            Icons.sports_soccer,
+            color: Color(0xFF1565FF),
+          ),
+        ),
+
+        const SizedBox(width: 14),
+
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                league,
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 12,
+                ),
+              ),
+
+              const SizedBox(height: 4),
+
+              Text(
+                '$home  vs  $away',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 8,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.blue.shade50,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            time,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1565FF),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
