@@ -1,7 +1,7 @@
 /*
 ===========================================
 ZSOLT AI PRO
-Version: v1.0.2
+Version: v1.0.3
 File: matches_screen.dart
 ===========================================
 */
@@ -94,7 +94,8 @@ class MatchesScreen extends StatelessWidget {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: days.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                separatorBuilder: (context, index) =>
+                    const SizedBox(width: 10),
                 itemBuilder: (context, index) {
                   final selected = index == 0;
 
