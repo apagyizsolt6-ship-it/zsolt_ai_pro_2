@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/match_detail/ai_analysis_card.dart';
-import '../widgets/match_detail/stats_card.dart';
 import '../widgets/match_detail/form_card.dart';
+import '../widgets/match_detail/h2h_card.dart';
+import '../widgets/match_detail/stats_card.dart';
 
 /// ===========================================
 /// ZSOLT AI PRO
-/// Version: v2.0.0
+/// Version: v2.1.0
 /// File: match_detail_screen.dart
 /// ===========================================
 
@@ -117,6 +118,14 @@ class MatchDetailScreen extends StatelessWidget {
               awayTeam: "Vendég",
               homeForm: "WWDWL",
               awayForm: "LWWDW",
+            ),
+
+            const SizedBox(height: 16),
+
+            const H2HCard(
+              homeWins: 4,
+              draws: 2,
+              awayWins: 1,
             ),
 
             const SizedBox(height: 24),
