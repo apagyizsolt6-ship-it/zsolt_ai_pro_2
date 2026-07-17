@@ -1,7 +1,7 @@
 /*
 ===========================================
 ZSOLT AI PRO
-Version: v1.0.1
+Version: v1.0.2
 File: matches_screen.dart
 ===========================================
 */
@@ -10,6 +10,16 @@ import 'package:flutter/material.dart';
 
 class MatchesScreen extends StatelessWidget {
   const MatchesScreen({super.key});
+
+  static const List<String> days = [
+    "Ma",
+    "Holnap",
+    "Hétfő",
+    "Kedd",
+    "Szerda",
+    "Csütörtök",
+    "Péntek",
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +30,7 @@ class MatchesScreen extends StatelessWidget {
         backgroundColor: const Color(0xFF0E1117),
         centerTitle: true,
         title: const Text(
-          'Mai mérkőzések',
+          "Mai mérkőzések",
           style: TextStyle(
             fontWeight: FontWeight.bold,
           ),
@@ -55,7 +65,7 @@ class MatchesScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Mai mérkőzések',
+                          "Mai mérkőzések",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 22,
@@ -64,7 +74,7 @@ class MatchesScreen extends StatelessWidget {
                         ),
                         SizedBox(height: 6),
                         Text(
-                          'Hamarosan itt jelennek meg az AI által elemzett mérkőzések.',
+                          "Válassz napot, majd böngészd az AI által elemzett mérkőzéseket.",
                           style: TextStyle(
                             color: Colors.white70,
                             height: 1.4,
@@ -77,38 +87,71 @@ class MatchesScreen extends StatelessWidget {
               ),
             ),
 
+            const SizedBox(height: 24),
+
+            SizedBox(
+              height: 46,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: days.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (context, index) {
+                  final selected = index == 0;
+
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? const Color(0xFF1565FF)
+                          : Colors.white10,
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Text(
+                      days[index],
+                      style: TextStyle(
+                        color: selected ? Colors.white : Colors.white70,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+
             const SizedBox(height: 30),
 
-            const Center(
-              child: Icon(
-                Icons.sports_score_rounded,
-                color: Colors.white24,
-                size: 90,
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            const Center(
-              child: Text(
-                'Nincs betöltött mérkőzés',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            const Center(
-              child: Text(
-                'A következő fejlesztési lépésben\nvalódi meccsadatok jelennek meg.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white54,
-                  height: 1.5,
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(
+                      Icons.sports_score_rounded,
+                      size: 90,
+                      color: Colors.white24,
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      "Nincs betöltött mérkőzés",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "A következő lépésben\nprémium meccskártyák érkeznek.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white54,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
