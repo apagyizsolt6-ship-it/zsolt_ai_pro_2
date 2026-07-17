@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../screens/match_detail_screen.dart';
+
 /// ===========================================
 /// ZSOLT AI PRO
-/// Version: v1.1.0
+/// Version: v1.2.0
 /// File: match_card.dart
 /// ===========================================
 
@@ -42,6 +44,26 @@ class MatchCard extends StatelessWidget {
     return Colors.grey;
   }
 
+  void _openMatch(BuildContext context) {
+    if (onTap != null) {
+      onTap!();
+      return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => MatchDetailScreen(
+          league: league,
+          homeTeam: homeTeam,
+          awayTeam: awayTeam,
+          kickoff: kickoff,
+          aiScore: aiScore,
+          isValueBet: isValueBet,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -52,7 +74,7 @@ class MatchCard extends StatelessWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(22),
-        onTap: onTap,
+        onTap: () => _openMatch(context),
         child: Padding(
           padding: const EdgeInsets.all(18),
           child: Column(
