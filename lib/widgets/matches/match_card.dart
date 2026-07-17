@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// ===========================================
 /// ZSOLT AI PRO
-/// Version: v1.0.0
+/// Version: v1.1.0
 /// File: match_card.dart
 /// ===========================================
 
@@ -26,6 +26,22 @@ class MatchCard extends StatelessWidget {
     this.onTap,
   });
 
+  Color get _aiColor {
+    if (aiScore >= 90) {
+      return Colors.green;
+    }
+
+    if (aiScore >= 80) {
+      return Colors.orange;
+    }
+
+    if (aiScore >= 70) {
+      return Colors.blue;
+    }
+
+    return Colors.grey;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -44,6 +60,12 @@ class MatchCard extends StatelessWidget {
             children: [
               Row(
                 children: [
+                  const Icon(
+                    Icons.emoji_events_rounded,
+                    color: Colors.amber,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       league,
@@ -54,7 +76,12 @@ class MatchCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  if (isValueBet)
+                  const Icon(
+                    Icons.star_border_rounded,
+                    color: Colors.grey,
+                  ),
+                  if (isValueBet) ...[
+                    const SizedBox(width: 10),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -73,13 +100,14 @@ class MatchCard extends StatelessWidget {
                         ),
                       ),
                     ),
+                  ],
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               Text(
                 homeTeam,
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 19,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -87,25 +115,36 @@ class MatchCard extends StatelessWidget {
               Text(
                 awayTeam,
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 19,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 18),
+              const Divider(),
+              const SizedBox(height: 12),
               Row(
                 children: [
-                  const Icon(Icons.schedule, size: 18),
+                  const Icon(
+                    Icons.schedule_rounded,
+                    size: 18,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(width: 6),
-                  Text(kickoff),
+                  Text(
+                    kickoff,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const Spacer(),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
+                      horizontal: 14,
+                      vertical: 7,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(18),
+                      color: _aiColor,
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       "AI $aiScore%",
@@ -115,10 +154,11 @@ class MatchCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
                   const Icon(
                     Icons.arrow_forward_ios_rounded,
                     size: 16,
+                    color: Colors.grey,
                   ),
                 ],
               ),
