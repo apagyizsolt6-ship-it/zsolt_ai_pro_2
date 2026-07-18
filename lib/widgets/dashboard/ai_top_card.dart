@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// ===========================================
 /// ZSOLT AI PRO
-/// Version: v1.0.1
+/// Version: v1.1.0
 /// File: ai_top_card.dart
 /// ===========================================
 
@@ -12,7 +12,7 @@ class AiTopCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 8,
+      elevation: 10,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
       ),
@@ -24,7 +24,7 @@ class AiTopCard extends StatelessWidget {
             const Row(
               children: [
                 Icon(
-                  Icons.auto_awesome,
+                  Icons.auto_awesome_rounded,
                   color: Color(0xFF7B3FFF),
                   size: 28,
                 ),
@@ -42,85 +42,154 @@ class AiTopCard extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 5,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.deepPurple.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Text(
-                '⭐ TOP PICK',
-                style: TextStyle(
-                  color: Color(0xFF7B3FFF),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 18),
-
-            const Text(
-              'Liverpool',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 4),
-              child: Text(
-                'vs',
-                style: TextStyle(
-                  color: Colors.grey,
-                ),
-              ),
-            ),
-
-            const Text(
-              'Arsenal',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: const LinearProgressIndicator(
-                value: 0.94,
-                minHeight: 10,
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Row(
               children: [
-                Text(
-                  'AI Score',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.deepPurple.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    '⭐ TOP PICK',
+                    style: TextStyle(
+                      color: Color(0xFF7B3FFF),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                Text(
-                  '94%',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF7B3FFF),
+
+                const SizedBox(width: 10),
+
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'VALUE BET',
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: 24),
+
+            const Center(
+              child: Text(
+                'Liverpool',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 6),
+              child: Center(
+                child: Text(
+                  'VS',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+
+            const Center(
+              child: Text(
+                'Arsenal',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.deepPurple.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          children: const [
+                            Text(
+                              'AI SCORE',
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
+                              ),
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              '94%',
+                              style: TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF7B3FFF),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Column(
+                          children: const [
+                            Text(
+                              'CONFIDENCE',
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
+                              ),
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              'HIGH',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: const LinearProgressIndicator(
+                      value: 0.94,
+                      minHeight: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 22),
 
             Row(
               children: List.generate(
@@ -128,22 +197,30 @@ class AiTopCard extends StatelessWidget {
                 (index) => const Padding(
                   padding: EdgeInsets.only(right: 4),
                   child: Icon(
-                    Icons.star,
+                    Icons.star_rounded,
                     color: Colors.amber,
-                    size: 20,
+                    size: 22,
                   ),
                 ),
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 22),
 
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
                 onPressed: () {},
                 icon: const Icon(Icons.analytics_outlined),
-                label: const Text('Elemzés megnyitása'),
+                label: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 4),
+                  child: Text(
+                    'AI elemzés megnyitása',
+                    style: TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
