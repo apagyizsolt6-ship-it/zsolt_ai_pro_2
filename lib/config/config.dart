@@ -1,8 +1,8 @@
-/// ===========================================
-/// ZSOLT AI PRO
-/// Version: v4.1.0
-/// File: config.dart
-/// ===========================================
+// ===========================================
+// ZSOLT AI PRO
+// Version: v4.1.0
+// File: lib/config/config.dart
+// ===========================================
 
 class AppConfig {
   const AppConfig._();
@@ -13,8 +13,10 @@ class AppConfig {
     defaultValue: '',
   );
 
+  /// TheSportsDB API Base URL
   static const String sportsDbBaseUrl =
       'https://www.thesportsdb.com/api/v2/json';
 
+  /// Igaz, ha van beállított API kulcs
   static bool get hasApiKey => sportsDbApiKey.isNotEmpty;
 }
