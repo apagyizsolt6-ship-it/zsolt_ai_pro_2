@@ -1,9 +1,9 @@
 /*
 ===========================================
 ZSOLT AI PRO
-Version: v1.2.1
+Version: v1.2.2
 File: matches_screen.dart
-Build: #035
+Build: #036
 ===========================================
 */
 
@@ -27,16 +27,6 @@ class _MatchesScreenState extends State<MatchesScreen> {
 
   String _searchText = '';
 
-  static const List<String> days = [
-    "Ma",
-    "Holnap",
-    "Hétfő",
-    "Kedd",
-    "Szerda",
-    "Csütörtök",
-    "Péntek",
-  ];
-
   List<MatchModel> get _filteredMatches {
     if (_searchText.isEmpty) {
       return DemoMatches.matches;
@@ -51,6 +41,28 @@ class _MatchesScreenState extends State<MatchesScreen> {
     }).toList();
   }
 
+  Color _leagueColor(String league) {
+    switch (league) {
+      case 'Premier League':
+        return Colors.amber;
+
+      case 'La Liga':
+        return Colors.redAccent;
+
+      case 'Serie A':
+        return Colors.blueAccent;
+
+      case 'Bundesliga':
+        return Colors.orange;
+
+      case 'NB I':
+        return Colors.green;
+
+      default:
+        return Colors.white;
+    }
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -60,6 +72,17 @@ class _MatchesScreenState extends State<MatchesScreen> {
   @override
   Widget build(BuildContext context) {
     final matches = _filteredMatches;
+
+    final groupedMatches = <String, List<MatchModel>>{};
+
+    for (final match in matches) {
+      groupedMatches.putIfAbsent(
+        match.league,
+        () => [],
+      );
+
+      groupedMatches[match.league]!.add(match);
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFF0E1117),
@@ -76,7 +99,12 @@ class _MatchesScreenState extends State<MatchesScreen> {
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
-        children: [          // Fejléc
+        children: [
+
+          //==========================================
+          // FEJLÉC
+          //==========================================
+
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -89,7 +117,8 @@ class _MatchesScreenState extends State<MatchesScreen> {
               borderRadius: BorderRadius.circular(24),
             ),
             child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
@@ -105,13 +134,16 @@ class _MatchesScreenState extends State<MatchesScreen> {
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 24,
-                          fontWeight: FontWeight.bold,
+                          fontWeight:
+                              FontWeight.bold,
                         ),
                       ),
                     ),
                   ],
                 ),
+
                 SizedBox(height: 16),
+
                 Text(
                   "AI elemzett mérkőzések",
                   style: TextStyle(
@@ -123,7 +155,9 @@ class _MatchesScreenState extends State<MatchesScreen> {
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 20),          //==========================================
+          // KERESŐ
+          //==========================================
 
           TextField(
             controller: _searchController,
@@ -141,6 +175,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
                       icon: const Icon(Icons.clear),
                       onPressed: () {
                         _searchController.clear();
+
                         setState(() {
                           _searchText = '';
                         });
@@ -149,7 +184,8 @@ class _MatchesScreenState extends State<MatchesScreen> {
               filled: true,
               fillColor: Colors.white10,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(18),
+                borderRadius:
+                    BorderRadius.circular(18),
                 borderSide: BorderSide.none,
               ),
             ),
@@ -157,23 +193,48 @@ class _MatchesScreenState extends State<MatchesScreen> {
 
           const SizedBox(height: 18),
 
+          //==========================================
+          // SZŰRŐK
+          //==========================================
+
           SizedBox(
             height: 44,
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
-                _chip("Összes", true),
+                _chip(
+                  "Összes",
+                  true,
+                ),
+
                 const SizedBox(width: 10),
-                _chip("AI TOP", false),
+
+                _chip(
+                  "AI TOP",
+                  false,
+                ),
+
                 const SizedBox(width: 10),
-                _chip("VALUE BET", false),
+
+                _chip(
+                  "VALUE BET",
+                  false,
+                ),
+
                 const SizedBox(width: 10),
-                _chip("Élő", false),
+
+                _chip(
+                  "Élő",
+                  false,
+                ),
               ],
             ),
           ),
 
-          const SizedBox(height: 22),          if (matches.isEmpty)
+          const SizedBox(height: 22),
+
+          if (matches.isEmpty)
+
             Container(
               padding: const EdgeInsets.all(32),
               alignment: Alignment.center,
@@ -184,16 +245,21 @@ class _MatchesScreenState extends State<MatchesScreen> {
                     size: 64,
                     color: Colors.white38,
                   ),
+
                   SizedBox(height: 16),
+
                   Text(
                     "Nincs találat",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                      fontWeight:
+                          FontWeight.bold,
                     ),
                   ),
+
                   SizedBox(height: 8),
+
                   Text(
                     "Próbálj másik csapatra vagy ligára keresni.",
                     textAlign: TextAlign.center,
@@ -204,23 +270,53 @@ class _MatchesScreenState extends State<MatchesScreen> {
                 ],
               ),
             )
+
           else
-            ...matches.map(
-              (match) => MatchCard(
-                league: match.league,
-                homeTeam: match.homeTeam,
-                awayTeam: match.awayTeam,
-                kickoff: MatchFormatter.formatTime(match.kickoff),
-                aiScore: match.aiScore,
-                isValueBet: match.valueBet,
-              ),
+
+            ...groupedMatches.entries.expand(
+              (entry) {
+
+                final league = entry.key;
+                final leagueMatches = entry.value;
+
+                return [
+
+                  _leagueHeader(
+                    league,
+                    leagueMatches.length,
+                    _leagueColor(league),
+                  ),
+
+                  const SizedBox(height: 12),                  ...leagueMatches.map(
+                    (match) => MatchCard(
+                      league: match.league,
+                      homeTeam: match.homeTeam,
+                      awayTeam: match.awayTeam,
+                      kickoff: MatchFormatter.formatTime(
+                        match.kickoff,
+                      ),
+                      aiScore: match.aiScore,
+                      isValueBet: match.valueBet,
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+                ];
+              },
             ),
         ],
       ),
     );
   }
 
-  Widget _chip(String text, bool selected) {
+  //==========================================
+  // SZŰRŐ CHIP
+  //==========================================
+
+  Widget _chip(
+    String text,
+    bool selected,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 18,
@@ -235,24 +331,33 @@ class _MatchesScreenState extends State<MatchesScreen> {
       child: Text(
         text,
         style: TextStyle(
-          color: selected ? Colors.white : Colors.white70,
+          color: selected
+              ? Colors.white
+              : Colors.white70,
           fontWeight: FontWeight.bold,
         ),
       ),
     );
   }
 
+  //==========================================
+  // LIGA FEJLÉC
+  //==========================================
+
   Widget _leagueHeader(
     String league,
     int count,
     Color color,
-  ) {    return Row(
+  ) {
+    return Row(
       children: [
         Icon(
           Icons.emoji_events_rounded,
           color: color,
         ),
+
         const SizedBox(width: 8),
+
         Expanded(
           child: Text(
             league,
@@ -263,6 +368,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
             ),
           ),
         ),
+
         Container(
           padding: const EdgeInsets.symmetric(
             horizontal: 12,
@@ -271,8 +377,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
           decoration: BoxDecoration(
             color: Colors.white10,
             borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
+          ),          child: Text(
             "$count meccs",
             style: const TextStyle(
               color: Colors.white70,
