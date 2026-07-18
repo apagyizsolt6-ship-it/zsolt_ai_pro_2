@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import '../widgets/match_detail/ai_analysis_card.dart';
 import '../widgets/match_detail/form_card.dart';
 import '../widgets/match_detail/h2h_card.dart';
+import '../widgets/match_detail/odds_card.dart';
 import '../widgets/match_detail/stats_card.dart';
 
 /// ===========================================
 /// ZSOLT AI PRO
-/// Version: v2.1.0
+/// Version: v2.2.0
 /// File: match_detail_screen.dart
 /// ===========================================
 
@@ -126,6 +127,14 @@ class MatchDetailScreen extends StatelessWidget {
               homeWins: 4,
               draws: 2,
               awayWins: 1,
+            ),
+
+            const SizedBox(height: 16),
+
+            const OddsCard(
+              homeWinOdd: 1.82,
+              drawOdd: 3.55,
+              awayWinOdd: 4.20,
             ),
 
             const SizedBox(height: 24),
