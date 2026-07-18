@@ -50,7 +50,9 @@ jobs:
         run: flutter analyze
 
       - name: Build Release APK
-        run: flutter build apk --release
+        run: |
+             flutter build apk --release \
+             --dart-define=SPORTSDB_API_KEY=${{ secrets.SPORTSDB_API_KEY }}
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
