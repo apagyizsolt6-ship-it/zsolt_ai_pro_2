@@ -155,8 +155,8 @@ class MatchesScreen extends StatelessWidget {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: days.length,
-                separatorBuilder: (_, __) =>
-                    const SizedBox(width: 10),
+                separatorBuilder: (context, index) => const 
+                SizedBox(width: 10),
                 itemBuilder: (context, index) {
                   final selected = index == 0;
 
