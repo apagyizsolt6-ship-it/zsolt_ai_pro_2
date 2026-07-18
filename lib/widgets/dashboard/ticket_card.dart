@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// ===========================================
 /// ZSOLT AI PRO
-/// Version: v1.0.1
+/// Version: v1.1.0
 /// File: ticket_card.dart
 /// ===========================================
 
@@ -12,7 +12,7 @@ class TicketCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 8,
+      elevation: 10,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
       ),
@@ -21,10 +21,11 @@ class TicketCard extends StatelessWidget {
         child: Column(
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 68,
-                  height: 68,
+                  width: 74,
+                  height: 74,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [
@@ -32,12 +33,12 @@ class TicketCard extends StatelessWidget {
                         Color(0xFF00E676),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(22),
                   ),
                   child: const Icon(
                     Icons.receipt_long_rounded,
                     color: Colors.white,
-                    size: 36,
+                    size: 40,
                   ),
                 ),
 
@@ -68,7 +69,7 @@ class TicketCard extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 22),
 
             Row(
               children: [
@@ -101,7 +102,82 @@ class TicketCard extends StatelessWidget {
                     ],
                   ),
                 ),
+
+                const SizedBox(width: 10),
+
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'AI READY',
+                    style: TextStyle(
+                      color: Color(0xFF1565FF),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
               ],
+            ),
+
+            const SizedBox(height: 20),
+
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.green.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: const Row(
+                children: [
+                  Icon(
+                    Icons.savings_rounded,
+                    color: Color(0xFF00C853),
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Mentett szelvények: 12',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1565FF).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: const Row(
+                children: [
+                  Icon(
+                    Icons.analytics_rounded,
+                    color: Color(0xFF1565FF),
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'AI Confidence: 96%',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
 
             const SizedBox(height: 22),
@@ -111,9 +187,26 @@ class TicketCard extends StatelessWidget {
               child: FilledButton.icon(
                 onPressed: () {},
                 icon: const Icon(Icons.receipt_long_rounded),
-                label: const Text(
-                  'Szelvényeim megnyitása',
+                label: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 4),
+                  child: Text(
+                    'Szelvényeim megnyitása',
+                    style: TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
                 ),
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            const Text(
+              'AI elemzés • Mentett szelvények • Eredmények',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 12,
               ),
             ),
           ],
