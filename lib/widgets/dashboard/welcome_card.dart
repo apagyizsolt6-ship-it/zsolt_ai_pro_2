@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 /// ===========================================
 /// ZSOLT AI PRO
-/// Version: v1.0.1
+/// Version: v1.1.0
 /// File: welcome_card.dart
+/// Premium Dashboard Card
 /// ===========================================
 
 class WelcomeCard extends StatelessWidget {
@@ -13,7 +14,7 @@ class WelcomeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         gradient: const LinearGradient(
@@ -26,78 +27,107 @@ class WelcomeCard extends StatelessWidget {
         ),
         boxShadow: const [
           BoxShadow(
-            blurRadius: 18,
-            offset: Offset(0, 8),
             color: Color(0x331565FF),
+            blurRadius: 20,
+            offset: Offset(0, 10),
           ),
         ],
       ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.psychology_alt_rounded,
-                color: Colors.white,
-                size: 26,
+          Positioned(
+            right: -35,
+            top: -35,
+            child: Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.08),
               ),
-              SizedBox(width: 10),
-              Text(
-                'Üdvözöl a',
+            ),
+          ),
+          Positioned(
+            right: 20,
+            top: 20,
+            child: Icon(
+              Icons.psychology_alt_rounded,
+              size: 72,
+              color: Colors.white.withOpacity(0.10),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: const [
+                  Icon(
+                    Icons.psychology_alt_rounded,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                  SizedBox(width: 10),
+                  Text(
+                    'Üdvözöl a',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 14),
+
+              const Text(
+                'ZSOLT AI PRO',
                 style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 18,
+                  color: Colors.white,
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.3,
                 ),
               ),
-            ],
-          ),
 
-          SizedBox(height: 12),
+              const SizedBox(height: 10),
 
-          Text(
-            'ZSOLT AI PRO',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
-            ),
-          ),
-
-          SizedBox(height: 18),
-
-          Text(
-            '⚽ A mesterséges intelligencia készen áll a mai mérkőzések elemzésére.',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              height: 1.5,
-            ),
-          ),
-
-          SizedBox(height: 18),
-
-          Divider(
-            color: Colors.white24,
-          ),
-
-          SizedBox(height: 10),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _InfoItem(
-                icon: Icons.sports_soccer,
-                label: 'Meccsek',
+              const Text(
+                '⚽ A mesterséges intelligencia készen áll a mai mérkőzések elemzésére.',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  height: 1.55,
+                ),
               ),
-              _InfoItem(
-                icon: Icons.auto_awesome,
-                label: 'AI',
-              ),
-              _InfoItem(
-                icon: Icons.receipt_long,
-                label: 'Szelvény',
+
+              const SizedBox(height: 24),
+
+              Row(
+                children: const [                  Expanded(
+                    child: _StatusCard(
+                      icon: Icons.sports_soccer_rounded,
+                      title: 'Meccsek',
+                      value: '184',
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: _StatusCard(
+                      icon: Icons.auto_awesome_rounded,
+                      title: 'AI Ready',
+                      value: '100%',
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: _StatusCard(
+                      icon: Icons.receipt_long_rounded,
+                      title: 'OCR',
+                      value: 'READY',
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -107,33 +137,62 @@ class WelcomeCard extends StatelessWidget {
   }
 }
 
-class _InfoItem extends StatelessWidget {
+class _StatusCard extends StatelessWidget {
   final IconData icon;
-  final String label;
+  final String title;
+  final String value;
 
-  const _InfoItem({
+  const _StatusCard({
     required this.icon,
-    required this.label,
+    required this.title,
+    required this.value,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(
-          icon,
-          color: Colors.white,
-          size: 22,
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        vertical: 14,
+        horizontal: 10,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: Colors.white24,
         ),
-        SizedBox(height: 6),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white70,
-            fontSize: 12,
+      ),
+      child: Column(
+        children: [
+          Icon(
+            icon,
+            color: Colors.white,
+            size: 24,
           ),
-        ),
-      ],
+
+          const SizedBox(height: 8),
+
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
