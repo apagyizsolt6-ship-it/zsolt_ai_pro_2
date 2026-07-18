@@ -247,7 +247,20 @@ class ApiService {
 
     return teams.cast<Map<String, dynamic>>();
   }
+  // =====================================================
+  // ALL LEAGUES
+  // =====================================================
 
+  Future<List<Map<String, dynamic>>> getAllLeagues() async {
+    final json = await _get(
+      '/all_leagues.php',
+    );
+
+    final leagues =
+        json['leagues'] as List<dynamic>? ?? [];
+
+    return leagues.cast<Map<String, dynamic>>();
+  }
   // =====================================================
   // TEST CONNECTION
   // =====================================================
