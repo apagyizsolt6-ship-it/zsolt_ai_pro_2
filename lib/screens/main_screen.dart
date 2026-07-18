@@ -1,14 +1,18 @@
 /*
 ===========================================
 ZSOLT AI PRO
-Version: v1.0.0
+Version: v1.1.1
+Build #030
 File: main_screen.dart
 ===========================================
 */
 
 import 'package:flutter/material.dart';
 
+import 'ai_screen.dart';
 import 'home_screen.dart';
+import 'matches_screen.dart';
+import 'tickets_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -22,10 +26,19 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = const [
     HomeScreen(),
-    Center(child: Text('Meccsek')),
-    Center(child: Text('AI')),
-    Center(child: Text('Szelvény')),
-    Center(child: Text('Profil')),
+    MatchesScreen(),
+    AiScreen(),
+    TicketsScreen(),
+
+    Center(
+      child: Text(
+        'Profil',
+        style: TextStyle(
+          color: Colors.white70,
+          fontSize: 22,
+        ),
+      ),
+    ),
   ];
 
   @override
@@ -35,28 +48,34 @@ class _MainScreenState extends State<MainScreen> {
 
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
+
         onDestinationSelected: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
+
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home_rounded),
             label: 'Home',
           ),
+
           NavigationDestination(
             icon: Icon(Icons.sports_soccer_rounded),
             label: 'Meccsek',
           ),
+
           NavigationDestination(
             icon: Icon(Icons.psychology_rounded),
             label: 'AI',
           ),
+
           NavigationDestination(
             icon: Icon(Icons.receipt_long_rounded),
             label: 'Szelvény',
           ),
+
           NavigationDestination(
             icon: Icon(Icons.person_rounded),
             label: 'Profil',
