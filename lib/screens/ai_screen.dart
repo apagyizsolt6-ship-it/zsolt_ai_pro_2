@@ -1,12 +1,14 @@
 /*
 ===========================================
 ZSOLT AI PRO
-Version: v1.2.0
+Version: v1.3.0
 File: ai_screen.dart
 ===========================================
 */
 
 import 'package:flutter/material.dart';
+
+import 'match_detail_screen.dart';
 
 class AiScreen extends StatelessWidget {
   const AiScreen({super.key});
@@ -113,6 +115,7 @@ class AiScreen extends StatelessWidget {
           const SizedBox(height: 18),
 
           _topMatch(
+            context,
             'Liverpool',
             'Arsenal',
             94,
@@ -122,6 +125,7 @@ class AiScreen extends StatelessWidget {
           const SizedBox(height: 16),
 
           _topMatch(
+            context,
             'Real Madrid',
             'Barcelona',
             91,
@@ -131,13 +135,17 @@ class AiScreen extends StatelessWidget {
           const SizedBox(height: 16),
 
           _topMatch(
+            context,
             'Inter',
             'Juventus',
             89,
             false,
           ),
 
-          const SizedBox(height: 16),          _topMatch(
+          const SizedBox(height: 16),
+
+          _topMatch(
+            context,
             'Manchester City',
             'Chelsea',
             88,
@@ -147,6 +155,7 @@ class AiScreen extends StatelessWidget {
           const SizedBox(height: 16),
 
           _topMatch(
+            context,
             'Milan',
             'Napoli',
             86,
@@ -190,80 +199,96 @@ class AiScreen extends StatelessWidget {
   }
 
   Widget _topMatch(
+    BuildContext context,
     String home,
     String away,
     int score,
     bool valueBet,
   ) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1C2230),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.sports_soccer,
-                color: Color(0xFF1565FF),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  '$home  vs  $away',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+    return InkWell(
+      borderRadius: BorderRadius.circular(24),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => MatchDetailScreen(
+              league: 'AI TOP',
+              homeTeam: home,
+              awayTeam: away,
+              kickoff: 'Ma 20:45',
+              aiScore: score,
+              isValueBet: valueBet,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1C2230),
+          borderRadius: BorderRadius.circular(24),
+        ),        child: Column(
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.sports_soccer,
+                  color: Color(0xFF1565FF),
                 ),
-              ),
-              if (valueBet)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    'VALUE BET',
-                    style: TextStyle(
-                      color: Colors.green,
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '$home  vs  $away',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          LinearProgressIndicator(
-            value: score / 100,
-            minHeight: 10,
-            borderRadius: BorderRadius.circular(20),
-            backgroundColor: Colors.white12,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              score >= 90
-                  ? Colors.green
-                  : Colors.orange,
+                if (valueBet)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      'VALUE BET',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ],
             ),
-          ),
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'AI Score: $score%',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontWeight: FontWeight.w600,
+            const SizedBox(height: 16),
+            LinearProgressIndicator(
+              value: score / 100,
+              minHeight: 10,
+              borderRadius: BorderRadius.circular(20),
+              backgroundColor: Colors.white12,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                score >= 90 ? Colors.green : Colors.orange,
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'AI Score: $score%',
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
