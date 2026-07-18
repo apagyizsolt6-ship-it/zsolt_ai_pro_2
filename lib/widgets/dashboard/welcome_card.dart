@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// ===========================================
 /// ZSOLT AI PRO
-/// Version: v1.1.0
+/// Version: v1.1.2
 /// File: welcome_card.dart
 /// Premium Dashboard Card
 /// ===========================================
@@ -43,7 +43,7 @@ class WelcomeCard extends StatelessWidget {
               height: 140,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.08),
+                color: Colors.white.withValues(alpha: 0.08),
               ),
             ),
           ),
@@ -53,14 +53,14 @@ class WelcomeCard extends StatelessWidget {
             child: Icon(
               Icons.psychology_alt_rounded,
               size: 72,
-              color: Colors.white.withOpacity(0.10),
+              color: Colors.white.withValues(alpha: 0.10),
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: const [
+              const Row(
+                children: [
                   Icon(
                     Icons.psychology_alt_rounded,
                     color: Colors.white,
@@ -77,9 +77,7 @@ class WelcomeCard extends StatelessWidget {
                   ),
                 ],
               ),
-
               const SizedBox(height: 14),
-
               const Text(
                 'ZSOLT AI PRO',
                 style: TextStyle(
@@ -89,9 +87,7 @@ class WelcomeCard extends StatelessWidget {
                   letterSpacing: 1.3,
                 ),
               ),
-
               const SizedBox(height: 10),
-
               const Text(
                 '⚽ A mesterséges intelligencia készen áll a mai mérkőzések elemzésére.',
                 style: TextStyle(
@@ -100,26 +96,24 @@ class WelcomeCard extends StatelessWidget {
                   height: 1.55,
                 ),
               ),
-
               const SizedBox(height: 24),
-
               Row(
-                children: const [                  Expanded(
+                children: [
+                  Expanded(
                     child: _StatusCard(
                       icon: Icons.sports_soccer_rounded,
                       title: 'Meccsek',
                       value: '184',
                     ),
                   ),
-                  SizedBox(width: 12),
-                  Expanded(
+                  const SizedBox(width: 12),                  Expanded(
                     child: _StatusCard(
                       icon: Icons.auto_awesome_rounded,
                       title: 'AI Ready',
                       value: '100%',
                     ),
                   ),
-                  SizedBox(width: 12),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: _StatusCard(
                       icon: Icons.receipt_long_rounded,
@@ -143,6 +137,7 @@ class _StatusCard extends StatelessWidget {
   final String value;
 
   const _StatusCard({
+    super.key,
     required this.icon,
     required this.title,
     required this.value,
@@ -156,22 +151,21 @@ class _StatusCard extends StatelessWidget {
         horizontal: 10,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.12),
+        color: Colors.white.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: Colors.white24,
         ),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             icon,
             color: Colors.white,
             size: 24,
           ),
-
           const SizedBox(height: 8),
-
           Text(
             value,
             style: const TextStyle(
@@ -180,9 +174,7 @@ class _StatusCard extends StatelessWidget {
               fontSize: 18,
             ),
           ),
-
           const SizedBox(height: 4),
-
           Text(
             title,
             textAlign: TextAlign.center,
