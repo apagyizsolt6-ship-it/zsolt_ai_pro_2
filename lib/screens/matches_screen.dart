@@ -1,18 +1,31 @@
 /*
 ===========================================
 ZSOLT AI PRO
-Version: v1.2.0
+Version: v1.2.1
 File: matches_screen.dart
-Build: #029
+Build: #035
 ===========================================
 */
 
 import 'package:flutter/material.dart';
 
+import '../data/demo_matches.dart';
+import '../models/match_model.dart';
+import '../utils/match_formatter.dart';
 import '../widgets/matches/match_card.dart';
 
-class MatchesScreen extends StatelessWidget {
+class MatchesScreen extends StatefulWidget {
   const MatchesScreen({super.key});
+
+  @override
+  State<MatchesScreen> createState() => _MatchesScreenState();
+}
+
+class _MatchesScreenState extends State<MatchesScreen> {
+  final TextEditingController _searchController =
+      TextEditingController();
+
+  String _searchText = '';
 
   static const List<String> days = [
     "Ma",
@@ -24,8 +37,30 @@ class MatchesScreen extends StatelessWidget {
     "Péntek",
   ];
 
+  List<MatchModel> get _filteredMatches {
+    if (_searchText.isEmpty) {
+      return DemoMatches.matches;
+    }
+
+    final query = _searchText.toLowerCase();
+
+    return DemoMatches.matches.where((match) {
+      return match.homeTeam.toLowerCase().contains(query) ||
+          match.awayTeam.toLowerCase().contains(query) ||
+          match.league.toLowerCase().contains(query);
+    }).toList();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final matches = _filteredMatches;
+
     return Scaffold(
       backgroundColor: const Color(0xFF0E1117),
       appBar: AppBar(
@@ -41,9 +76,7 @@ class MatchesScreen extends StatelessWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
-        children: [
-
-          // Fejléc
+        children: [          // Fejléc
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -58,7 +91,6 @@ class MatchesScreen extends StatelessWidget {
             child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 Row(
                   children: [
                     Icon(
@@ -67,7 +99,6 @@ class MatchesScreen extends StatelessWidget {
                       size: 42,
                     ),
                     SizedBox(width: 14),
-
                     Expanded(
                       child: Text(
                         "Mai mérkőzések",
@@ -80,11 +111,9 @@ class MatchesScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-
                 SizedBox(height: 16),
-
                 Text(
-                  "184 mérkőzés • 28 liga • AI elemzés elérhető",
+                  "AI elemzett mérkőzések",
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 15,
@@ -97,9 +126,26 @@ class MatchesScreen extends StatelessWidget {
           const SizedBox(height: 20),
 
           TextField(
+            controller: _searchController,
+            onChanged: (value) {
+              setState(() {
+                _searchText = value;
+              });
+            },
             decoration: InputDecoration(
               hintText: "Csapat vagy liga keresése...",
               prefixIcon: const Icon(Icons.search),
+              suffixIcon: _searchText.isEmpty
+                  ? null
+                  : IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() {
+                          _searchText = '';
+                        });
+                      },
+                    ),
               filled: true,
               fillColor: Colors.white10,
               border: OutlineInputBorder(
@@ -127,115 +173,48 @@ class MatchesScreen extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 22),
-
-          _leagueHeader(
-            "Premier League",
-            4,
-            Colors.orange,
-          ),
-
-          const SizedBox(height: 12),
-
-          const MatchCard(
-            league: "Premier League",
-            homeTeam: "Liverpool",
-            awayTeam: "Manchester City",
-            kickoff: "18:30",
-            aiScore: 94,
-            isValueBet: true,
-          ),
-
-          const MatchCard(
-            league: "Premier League",
-            homeTeam: "Arsenal",
-            awayTeam: "Chelsea",
-            kickoff: "20:45",
-            aiScore: 90,
-          ),          const MatchCard(
-            league: "Premier League",
-            homeTeam: "Tottenham",
-            awayTeam: "Newcastle",
-            kickoff: "21:00",
-            aiScore: 87,
-          ),
-
-          const MatchCard(
-            league: "Premier League",
-            homeTeam: "Aston Villa",
-            awayTeam: "Brighton",
-            kickoff: "21:00",
-            aiScore: 82,
-          ),
-
-          const SizedBox(height: 24),
-
-          _leagueHeader(
-            "La Liga",
-            3,
-            Colors.red,
-          ),
-
-          const SizedBox(height: 12),
-
-          const MatchCard(
-            league: "La Liga",
-            homeTeam: "Real Madrid",
-            awayTeam: "Barcelona",
-            kickoff: "21:00",
-            aiScore: 91,
-            isValueBet: true,
-          ),
-
-          const MatchCard(
-            league: "La Liga",
-            homeTeam: "Atletico Madrid",
-            awayTeam: "Sevilla",
-            kickoff: "19:30",
-            aiScore: 84,
-          ),
-
-          const MatchCard(
-            league: "La Liga",
-            homeTeam: "Villarreal",
-            awayTeam: "Real Betis",
-            kickoff: "18:00",
-            aiScore: 79,
-          ),
-
-          const SizedBox(height: 24),
-
-          _leagueHeader(
-            "Serie A",
-            3,
-            Colors.green,
-          ),
-
-          const SizedBox(height: 12),
-
-          const MatchCard(
-            league: "Serie A",
-            homeTeam: "Inter",
-            awayTeam: "Juventus",
-            kickoff: "20:45",
-            aiScore: 89,
-          ),
-
-          const MatchCard(
-            league: "Serie A",
-            homeTeam: "Milan",
-            awayTeam: "Napoli",
-            kickoff: "18:30",
-            aiScore: 86,
-          ),
-
-          const MatchCard(
-            league: "Serie A",
-            homeTeam: "Roma",
-            awayTeam: "Lazio",
-            kickoff: "21:00",
-            aiScore: 83,
-          ),
+          const SizedBox(height: 22),          if (matches.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(32),
+              alignment: Alignment.center,
+              child: const Column(
+                children: [
+                  Icon(
+                    Icons.search_off_rounded,
+                    size: 64,
+                    color: Colors.white38,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    "Nincs találat",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    "Próbálj másik csapatra vagy ligára keresni.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white60,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            ...matches.map(
+              (match) => MatchCard(
+                league: match.league,
+                homeTeam: match.homeTeam,
+                awayTeam: match.awayTeam,
+                kickoff: MatchFormatter.formatTime(match.kickoff),
+                aiScore: match.aiScore,
+                isValueBet: match.valueBet,
+              ),
+            ),
         ],
       ),
     );
@@ -267,8 +246,7 @@ class MatchesScreen extends StatelessWidget {
     String league,
     int count,
     Color color,
-  ) {
-    return Row(
+  ) {    return Row(
       children: [
         Icon(
           Icons.emoji_events_rounded,
