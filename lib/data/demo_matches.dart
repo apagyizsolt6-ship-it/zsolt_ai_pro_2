@@ -10,7 +10,7 @@ File: demo_matches.dart
 import '../models/match_model.dart';
 
 class DemoMatches {
-  static const List<MatchModel> matches = [
+  static final List<MatchModel> matches = [
     MatchModel(
       id: 1,
       league: 'Premier League',
