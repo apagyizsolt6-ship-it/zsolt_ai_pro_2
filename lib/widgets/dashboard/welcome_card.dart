@@ -137,7 +137,7 @@ class _StatusCard extends StatelessWidget {
   final String value;
 
   const _StatusCard({
-    super.key,
+    
     required this.icon,
     required this.title,
     required this.value,
