@@ -1,26 +1,22 @@
 /*
 ===========================================
 ZSOLT AI PRO
-Version: v1.1.0
+Version: v1.0.0
 File: app_gradients.dart
 ===========================================
 */
 
 import 'package:flutter/material.dart';
 
-import 'app_colors.dart';
-
 class AppGradients {
   AppGradients._();
 
-  /// Fő ZSOLT AI PRO gradient
-  /// (Prémium lila–kék dizájn)
   static const LinearGradient primary = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      AppColors.primary,
-      AppColors.secondary,
+      Color(0xFF1565FF),
+      Color(0xFF42A5F5),
     ],
   );
 
@@ -46,38 +42,8 @@ class AppGradients {
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [
-      AppColors.card,
-      AppColors.background,
-    ],
-  );
-
-  /// AI kiemelő gradient
-  static const LinearGradient ai = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [
-      Color(0xFF7B3FFF),
-      Color(0xFF1565FF),
-    ],
-  );
-
-  /// Value Bet gradient
-  static const LinearGradient valueBet = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [
-      Color(0xFF00C853),
-      Color(0xFF00E676),
-    ],
-  );
-
-  /// Figyelmeztetés gradient
-  static const LinearGradient warning = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [
-      Color(0xFFFF9800),
-      Color(0xFFFFC107),
+      Color(0xFF1B1F2A),
+      Color(0xFF11151E),
     ],
   );
 }
