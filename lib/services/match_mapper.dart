@@ -1,6 +1,6 @@
 // ===========================================
 // ZSOLT AI PRO
-// Version: v4.2.0
+// Version: v4.2.1
 // File: lib/services/match_mapper.dart
 // ===========================================
 
@@ -52,16 +52,20 @@ class MatchMapper {
     }
 
     return MatchModel(
-      id: json['idEvent']?.toString() ?? '',
+      id: int.tryParse(
+            json['idEvent']?.toString() ?? '',
+          ) ??
+          0,
       league: league,
       homeTeam: homeTeam,
       awayTeam: awayTeam,
       kickoff: kickoff,
-      status: status,
-
-      // Ezeket később AI számolja
       aiScore: 0,
       valueBet: false,
+      status: status,
+      homeOdd: null,
+      drawOdd: null,
+      awayOdd: null,
     );
   }
 
