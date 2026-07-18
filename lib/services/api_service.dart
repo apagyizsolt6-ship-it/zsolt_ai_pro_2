@@ -253,7 +253,7 @@ class ApiService {
 
   Future<List<Map<String, dynamic>>> getAllLeagues() async {
     final json = await _get(
-      '/all_leagues.php',
+      '/all/leagues',
     );
 
     final leagues =
