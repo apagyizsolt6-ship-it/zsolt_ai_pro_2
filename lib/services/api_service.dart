@@ -5,7 +5,7 @@ import 'dart:io';
 import '../config/config.dart';
 
 // ===========================================
-// ZSOLT AI PRO - TELJESEN JAVÍTOTT VERZIÓ
+// ZSOLT AI PRO - JAVÍTOTT VERZIÓ (testConnection visszaállítva)
 // File: lib/services/api_service.dart
 // ===========================================
 
@@ -54,7 +54,7 @@ class ApiService {
     }
   }
 
-  // --- JAVÍTOTT METÓDUSOK A V2 SZABVÁNY SZERINT ---
+  // --- AZ ÖSSZES METÓDUS (A TESTCONNECTION-NEL EGYÜTT) ---
 
   Future<List<Map<String, dynamic>>> getLiveSoccer() async {
     final json = await _get('/livescore/soccer');
@@ -112,6 +112,16 @@ class ApiService {
   Future<List<Map<String, dynamic>>> getAllLeagues() async {
     final json = await _get('/all/leagues');
     return (json['leagues'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
+  }
+
+  // --- VISSZAÁLLÍTOTT METÓDUS ---
+  Future<bool> testConnection() async {
+    try {
+      await getLiveSoccer();
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 }
 
