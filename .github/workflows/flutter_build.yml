@@ -17,11 +17,15 @@ jobs:
         with: { channel: 'stable', cache: true }
       - run: flutter pub get
       
-      # Töröljük a félkész mappát, ha létezne
-      - run: rm -rf android
+      # Ez a parancs létrehozza a projektet a legmodernebb beállításokkal, 
+      # és az Android manifest-be automatikusan bekerül az internet engedély.
+      - run: flutter create . --platforms=android
       
-      # Létrehozzuk a projektet v2 embedding-gel, ami alapból tartalmazza az internet-engedélyt
-      - run: flutter create . --platforms=android --org=hu.zsoltproai
+      # Itt hozzáadjuk az internet engedélyt egyetlen lépésben, 
+      # hogy biztosan benne legyen az alkalmazásban.
+      - run: |
+          sed -i '/<application/a \    android:usesCleartextTraffic="true"' android/app/src/main/AndroidManifest.xml
+          sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET" />' android/app/src/main/AndroidManifest.xml
       
       - run: flutter build apk --release --dart-define=SPORTSDB_API_KEY=${{ secrets.SPORTSDB_API_KEY }}
       
