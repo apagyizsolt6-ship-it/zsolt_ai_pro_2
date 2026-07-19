@@ -15,7 +15,7 @@ class AppConfig {
 
   /// TheSportsDB API Base URL
   static const String sportsDbBaseUrl =
-      'https://www.thesportsdb.com/api/v2/json';
+      'https://thesportsdb.com/api/v2/json';
 
   /// Igaz, ha van beállított API kulcs
   static bool get hasApiKey => sportsDbApiKey.isNotEmpty;
