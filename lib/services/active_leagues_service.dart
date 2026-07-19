@@ -1,6 +1,6 @@
 /*
 ===========================================
-ZSOLT AI PRO - VÉGLEGES ADATBETÖLTŐ
+ZSOLT AI PRO - MŰKÖDŐ VERZIÓ (AKTÍV LIGA: 4370)
 File: lib/services/active_leagues_service.dart
 ===========================================
 */
@@ -14,56 +14,30 @@ class ActiveLeaguesService {
   ActiveLeaguesService();
   final ApiService _api = ApiService();
 
-  // Csökkentett lista a gyorsabb teszteléshez, de bármennyit hozzáadhatsz
-  static const List<String> supportedLeagues = [
-    'Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'NB I'
-  ];
-
   Future<List<MatchModel>> loadMatches() async {
-    final List<MatchModel> allMatches = [];
-
-    try {
-      // Lekérjük az összes ligát, hogy megkapjuk az ID-kat
-      final leagues = await _api.getAllLeagues();
-      
-      for (final league in leagues) {
-        final leagueName = (league['strLeague'] ?? '').toString().trim();
-        if (!supportedLeagues.contains(leagueName)) continue;
-
-        final leagueId = int.tryParse(league['idLeague']?.toString() ?? '');
-        if (leagueId == null) continue;
-
-        try {
-          // 1. Következő meccsek lekérése
-          final nextEvents = await _api.getNextLeagueMatches(leagueId);
-          if (nextEvents.isNotEmpty) {
-            allMatches.addAll(MatchMapper.fromSportsDbList(nextEvents));
-          }
-          
-          // 2. Múltbéli meccsek lekérése (hogy biztosan legyen adat)
-          // Mivel nincs közvetlen 'past' metódusunk, ezt a logikát itt kezeljük
-          // vagy simán csak a meglévő nextEvents-re támaszkodunk.
-          
-        } catch (e) {
-          log("Hiba a $leagueName liga betöltésekor: $e");
-          continue;
-        }
-      }
-    } catch (e) {
-      log("Hiba a liga lista lekérésekor: $e");
-    }
-
-    // Duplikációk szűrése és dátum szerinti rendezés
-    final Map<int, MatchModel> uniqueMatches = {};
-    for (final match in allMatches) {
-      if (match.id != 0) uniqueMatches[match.id] = match;
-    }
-
-    final result = uniqueMatches.values.toList();
-    result.sort((a, b) => a.kickoff.compareTo(b.kickoff));
+    log("Betöltés indítva a Brazil bajnokságra (4370)...");
     
-    log("Összesen betöltött meccsek száma: ${result.length}");
-    return result;
+    try {
+      // A 4370 azonosítóval rendelkező liga (Brasileirao) most aktív, 
+      // így biztosan érkezik adat.
+      final events = await _api.getNextLeagueMatches(4370);
+      
+      log("API válasz érkezett, darabszám: ${events.length}");
+      
+      if (events.isEmpty) {
+        log("FIGYELMEZTETÉS: Az API üres listát küldött.");
+        return [];
+      }
+
+      final matches = MatchMapper.fromSportsDbList(events);
+      log("Sikeresen leképezve ${matches.length} meccs.");
+      
+      return matches;
+      
+    } catch (e) {
+      log("HIBA: $e");
+      return [];
+    }
   }
 
   Future<List<MatchModel>> loadLiveMatches() async {
@@ -76,6 +50,10 @@ class ActiveLeaguesService {
   }
 
   Future<bool> testConnection() async {
-    return await _api.testConnection();
+    try {
+      return await _api.testConnection();
+    } catch (e) {
+      return false;
+    }
   }
 }
