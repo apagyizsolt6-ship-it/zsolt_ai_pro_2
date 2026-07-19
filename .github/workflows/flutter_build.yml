@@ -17,8 +17,11 @@ jobs:
         with: { channel: 'stable', cache: true }
       - run: flutter pub get
       
-      # Ez a parancs javítja a v1/v2 ütközést és létrehozza az internet-engedélyt tartalmazó Android mappát
-      - run: flutter create . --platforms=android
+      # Itt adjuk hozzá az internet engedélyt a manifest-hez fordítás előtt, 
+      # anélkül, hogy az egész mappát létrehoznánk/felülírnánk.
+      - run: |
+          mkdir -p android/app/src/main
+          echo '<manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/></manifest>' > android/app/src/main/AndroidManifest.xml
 
       - run: flutter build apk --release --dart-define=SPORTSDB_API_KEY=${{ secrets.SPORTSDB_API_KEY }}
       
