@@ -1,6 +1,6 @@
 /*
 ===========================================
-ZSOLT AI PRO - MŰKÖDŐ VERZIÓ (AKTÍV LIGA: 4370)
+ZSOLT AI PRO - ROMÁN SZUPER LIGA HOZZÁADVA
 File: lib/services/active_leagues_service.dart
 ===========================================
 */
@@ -14,30 +14,40 @@ class ActiveLeaguesService {
   ActiveLeaguesService();
   final ApiService _api = ApiService();
 
-  Future<List<MatchModel>> loadMatches() async {
-    log("Betöltés indítva a Brazil bajnokságra (4370)...");
-    
-    try {
-      // A 4370 azonosítóval rendelkező liga (Brasileirao) most aktív, 
-      // így biztosan érkezik adat.
-      final events = await _api.getNextLeagueMatches(4370);
-      
-      log("API válasz érkezett, darabszám: ${events.length}");
-      
-      if (events.isEmpty) {
-        log("FIGYELMEZTETÉS: Az API üres listát küldött.");
-        return [];
-      }
+  // Itt a lista, hozzáadva a Román Szuper Liga (ID: 4406)
+  static const List<String> supportedLeagues = [
+    'Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'NB I', 'SuperLiga'
+  ];
 
-      final matches = MatchMapper.fromSportsDbList(events);
-      log("Sikeresen leképezve ${matches.length} meccs.");
-      
-      return matches;
-      
-    } catch (e) {
-      log("HIBA: $e");
-      return [];
+  Future<List<MatchModel>> loadMatches() async {
+    final List<MatchModel> allMatches = [];
+    
+    // A Román Szuper Liga ID-ja: 4406
+    final List<int> leagueIdsToFetch = [4328, 4335, 4331, 4332, 4347, 4406];
+
+    for (int id in leagueIdsToFetch) {
+      try {
+        log("Adatok betöltése $id ID-jú ligából...");
+        final events = await _api.getNextLeagueMatches(id);
+        
+        if (events.isNotEmpty) {
+          allMatches.addAll(MatchMapper.fromSportsDbList(events));
+        }
+      } catch (e) {
+        log("Hiba a $id ID-jú liga betöltésekor: $e");
+      }
     }
+
+    final Map<int, MatchModel> uniqueMatches = {};
+    for (final match in allMatches) {
+      if (match.id != 0) uniqueMatches[match.id] = match;
+    }
+
+    final result = uniqueMatches.values.toList();
+    result.sort((a, b) => a.kickoff.compareTo(b.kickoff));
+    
+    log("Összesen betöltött meccsek száma: ${result.length}");
+    return result;
   }
 
   Future<List<MatchModel>> loadLiveMatches() async {
@@ -50,10 +60,6 @@ class ActiveLeaguesService {
   }
 
   Future<bool> testConnection() async {
-    try {
-      return await _api.testConnection();
-    } catch (e) {
-      return false;
-    }
+    return await _api.testConnection();
   }
 }
