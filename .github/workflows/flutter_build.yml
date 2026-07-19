@@ -17,12 +17,12 @@ jobs:
         with: { channel: 'stable', cache: true }
       - run: flutter pub get
       
-      # Itt adjuk hozzá az internet engedélyt a manifest-hez fordítás előtt, 
-      # anélkül, hogy az egész mappát létrehoznánk/felülírnánk.
-      - run: |
-          mkdir -p android/app/src/main
-          echo '<manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/></manifest>' > android/app/src/main/AndroidManifest.xml
-
+      # Töröljük a félkész mappát, ha létezne
+      - run: rm -rf android
+      
+      # Létrehozzuk a projektet v2 embedding-gel, ami alapból tartalmazza az internet-engedélyt
+      - run: flutter create . --platforms=android --org=hu.zsoltproai
+      
       - run: flutter build apk --release --dart-define=SPORTSDB_API_KEY=${{ secrets.SPORTSDB_API_KEY }}
       
       - uses: actions/upload-artifact@v4
