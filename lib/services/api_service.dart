@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
-
-import 'package:http/http.dart' as http;
+import 'dart:io';
 
 import '../config/config.dart';
 
 // ===========================================
 // ZSOLT AI PRO
-// Version: v4.1.0
+// Version: v4.2.0
 // File: lib/services/api_service.dart
 //
 // TheSportsDB Premium API
+// HttpClient verzió
 // ===========================================
 
 class ApiService {
@@ -26,11 +26,6 @@ class ApiService {
   static const Duration _timeout =
       Duration(seconds: 20);
 
-  Map<String, String> get _headers => {
-        'X-API-KEY': apiKey,
-        'Accept': 'application/json',
-      };
-
   Future<Map<String, dynamic>> _get(
     String endpoint,
   ) async {
@@ -40,34 +35,73 @@ class ApiService {
       );
     }
 
-    final uri = Uri.parse(
+    final Uri uri = Uri.parse(
       '$_baseUrl$endpoint',
     );
 
-    final response = await http
-        .get(
-          uri,
-          headers: _headers,
-        )
-        .timeout(_timeout);
+    final HttpClient client = HttpClient();
+    client.connectionTimeout = _timeout;
 
-    if (response.statusCode != 200) {
-      throw ApiException(
-        'HTTP ${response.statusCode}',
+    try {
+      final HttpClientRequest request =
+          await client
+              .getUrl(uri)
+              .timeout(_timeout);
+
+      request.headers.set(
+        HttpHeaders.acceptHeader,
+        'application/json',
       );
-    }
 
-    final decoded = jsonDecode(
-      response.body,
-    );
-
-    if (decoded is! Map<String, dynamic>) {
-      throw ApiException(
-        'Érvénytelen API válasz.',
+      request.headers.set(
+        'X-API-KEY',
+        apiKey,
       );
-    }
 
-    return decoded;
+      final HttpClientResponse response =
+          await request
+              .close()
+              .timeout(_timeout);
+
+      final String body =
+          await response
+              .transform(utf8.decoder)
+              .join();
+
+      if (response.statusCode != 200) {
+        throw ApiException(
+          'HTTP ${response.statusCode}\n$body',
+        );
+      }
+
+      final decoded = jsonDecode(body);
+
+      if (decoded is! Map<String, dynamic>) {
+        throw ApiException(
+          'Érvénytelen API válasz.',
+        );
+      }
+
+      return decoded;
+    } on SocketException catch (e) {
+      throw ApiException(
+        'SocketException: $e',
+      );
+    } on HandshakeException catch (e) {
+      throw ApiException(
+        'HandshakeException: $e',
+      );
+    } on TimeoutException catch (e) {
+      throw ApiException(
+        'TimeoutException: $e',
+      );
+    } on HttpException catch (e) {
+      throw ApiException(
+        'HttpException: $e',
+      );
+    } finally {
+      client.close(force: true);
+    }
   }
 
   // =====================================================
@@ -84,8 +118,7 @@ class ApiService {
     final events =
         json['events'] as List<dynamic>? ?? [];
 
-    return events
-        .cast<Map<String, dynamic>>();
+    return events.cast<Map<String, dynamic>>();
   }
 
   // =====================================================
@@ -158,7 +191,8 @@ class ApiService {
       return null;
     }
 
-    return teams.first as Map<String, dynamic>;
+    return teams.first
+        as Map<String, dynamic>;
   }
 
   // =====================================================
@@ -179,7 +213,8 @@ class ApiService {
       return null;
     }
 
-    return leagues.first as Map<String, dynamic>;
+    return leagues.first
+        as Map<String, dynamic>;
   }
 
   // =====================================================
@@ -247,6 +282,7 @@ class ApiService {
 
     return teams.cast<Map<String, dynamic>>();
   }
+
   // =====================================================
   // ALL LEAGUES
   // =====================================================
@@ -261,6 +297,7 @@ class ApiService {
 
     return leagues.cast<Map<String, dynamic>>();
   }
+
   // =====================================================
   // TEST CONNECTION
   // =====================================================
@@ -272,7 +309,8 @@ class ApiService {
     } catch (_) {
       return false;
     }
-  }}
+  }
+}
 
 class ApiException implements Exception {
   ApiException(this.message);
