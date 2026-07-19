@@ -23,7 +23,7 @@ class ApiService {
   static const String _baseUrl =
       AppConfig.sportsDbBaseUrl;
 
-  static const Duration _timeout =
+  static const Duration _timeout = 
       Duration(seconds: 20);
 
   Future<Map<String, dynamic>> _get(
