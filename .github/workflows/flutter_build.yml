@@ -16,7 +16,12 @@ jobs:
       - uses: subosito/flutter-action@v2
         with: { channel: 'stable', cache: true }
       - run: flutter pub get
-      - run: flutter build apk --release --target-platform android-arm64 --dart-define=SPORTSDB_API_KEY=${{ secrets.SPORTSDB_API_KEY }}
+      
+      # Ez a parancs javítja a v1/v2 ütközést és létrehozza az internet-engedélyt tartalmazó Android mappát
+      - run: flutter create . --platforms=android
+
+      - run: flutter build apk --release --dart-define=SPORTSDB_API_KEY=${{ secrets.SPORTSDB_API_KEY }}
+      
       - uses: actions/upload-artifact@v4
         with:
           name: Zsolt-AI-PRO-APK
