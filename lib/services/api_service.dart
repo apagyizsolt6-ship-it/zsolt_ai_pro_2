@@ -4,25 +4,26 @@ import 'dart:io';
 
 import '../config/config.dart';
 
-// ===========================================
-// ZSOLT AI PRO - JAVÍTOTT VERZIÓ (testConnection visszaállítva)
-// File: lib/services/api_service.dart
-// ===========================================
-
 class ApiService {
-  ApiService({
-    String? apiKey,
-  }) : apiKey = apiKey ?? AppConfig.sportsDbApiKey;
+  ApiService({String? apiKey}) : apiKey = apiKey ?? AppConfig.sportsDbApiKey;
 
   final String apiKey;
-
   static const String _baseUrl = AppConfig.sportsDbBaseUrl;
   static const Duration _timeout = Duration(seconds: 20);
 
+  // A 20-30 kért bajnokság ID-ja
+  static const Map<String, int> leagues = {
+    "Premier League": 4328, "La Liga": 4335, "Bundesliga": 4331, "Serie A": 4332,
+    "Ligue 1": 4334, "NB I": 4347, "Eredivisie": 4337, "Primeira Liga": 4344,
+    "Süper Lig": 4350, "Champions League": 4480, "Europa League": 4481,
+    "MLS": 4346, "Liga MX": 4351, "Brasileirao": 4370, "Argentine Primera": 4371,
+    "Chilean Primera": 4373, "Colombian Primera A": 4372,
+    "J-League": 4356, "K-League": 4358, "Chinese Super League": 4359,
+    "Saudi Pro League": 4443, "A-League": 4354, "Egyptian Premier": 4381
+  };
+
   Future<Map<String, dynamic>> _get(String endpoint) async {
-    if (apiKey.isEmpty) {
-      throw ApiException('TheSportsDB API kulcs nincs beállítva.');
-    }
+    if (apiKey.isEmpty) throw ApiException('TheSportsDB API kulcs nincs beállítva.');
 
     final Uri uri = Uri.parse('$_baseUrl$endpoint');
     final HttpClient client = HttpClient();
@@ -32,29 +33,19 @@ class ApiService {
       final HttpClientRequest request = await client.getUrl(uri).timeout(_timeout);
       request.headers.set(HttpHeaders.acceptHeader, 'application/json');
       request.headers.set('X-API-KEY', apiKey);
-
       final HttpClientResponse response = await request.close().timeout(_timeout);
       final String body = await response.transform(utf8.decoder).join();
-
-      if (response.statusCode != 200) {
-        throw ApiException('HTTP ${response.statusCode}\n$body');
-      }
-
-      final decoded = jsonDecode(body);
-      if (decoded is! Map<String, dynamic>) {
-        throw ApiException('Érvénytelen API válasz.');
-      }
-      return decoded;
+      
+      if (response.statusCode != 200) throw ApiException('HTTP ${response.statusCode}');
+      return jsonDecode(body);
     } on SocketException catch (e) {
       throw ApiException('SocketException: $e');
-    } on TimeoutException catch (e) {
-      throw ApiException('TimeoutException: $e');
     } finally {
       client.close(force: true);
     }
   }
 
-  // --- AZ ÖSSZES METÓDUS (A TESTCONNECTION-NEL EGYÜTT) ---
+  // --- AZ ÖSSZES EREDETI METÓDUS VISSZATÉVE ---
 
   Future<List<Map<String, dynamic>>> getLiveSoccer() async {
     final json = await _get('/livescore/soccer');
@@ -62,7 +53,7 @@ class ApiService {
   }
 
   Future<List<Map<String, dynamic>>> getNextLeagueMatches(int leagueId) async {
-    final json = await _get('/schedule/next/league/$leagueId');
+    final json = await _get('/events/next/league/$leagueId');
     return (json['events'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
   }
 
@@ -114,7 +105,6 @@ class ApiService {
     return (json['leagues'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
   }
 
-  // --- VISSZAÁLLÍTOTT METÓDUS ---
   Future<bool> testConnection() async {
     try {
       await getLiveSoccer();
