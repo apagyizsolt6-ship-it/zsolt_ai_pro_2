@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 
 import '../models/match_model.dart';
 import '../services/active_leagues_service.dart';
-import '../utils/match_formatter.dart';
+
 import '../widgets/matches/match_card.dart';
 
 enum MatchFilter {
@@ -516,12 +516,10 @@ class _MatchesScreenState
                                       match.homeTeam,
                                   awayTeam:
                                       match.awayTeam,
-                                  kickoff:
-                                      MatchFormatter
-                                          .formatTime(
-                                    match.kickoff,
-                                  ),
-                                  aiScore:
+                                  kickoff: match.kickoff,
+                                  
+                      
+                                   aiScore:
                                       match.aiScore,
                                   isValueBet:
                                       match.valueBet,
