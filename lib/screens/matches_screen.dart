@@ -68,7 +68,6 @@ class _MatchesScreenState extends State<MatchesScreen> {
 
     final Map<String, List<MatchModel>> grouped = {};
     for (var m in filtered) {
-      // Itt hívjuk meg az automatikus formázót:
       final formattedName = _formatLeagueName(m.league);
       grouped.putIfAbsent(formattedName, () => []).add(m);
     }
@@ -85,7 +84,15 @@ class _MatchesScreenState extends State<MatchesScreen> {
               final sortedMatches = entry.value..sort((a, b) => b.status.index.compareTo(a.status.index));
               return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Padding(padding: const EdgeInsets.all(16), child: Text(entry.key, style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 14))),
-                ...sortedMatches.map((m) => MatchCard(homeTeam: m.homeTeam, awayTeam: m.awayTeam, kickoff: m.kickoff, aiScore: m.aiScore, status: m.status, isValueBet: m.valueBet)),
+                ...sortedMatches.map((m) => MatchCard(
+                  homeTeam: m.homeTeam,
+                  awayTeam: m.awayTeam,
+                  kickoff: m.kickoff,
+                  aiScore: m.aiScore,
+                  status: m.status,
+                  isValueBet: m.valueBet,
+                  league: entry.key, // <--- ITT ÁTADJUK A LIGA NEVÉT A RÉSZLETES OLDALHOZ
+                )),
               ]);
             }).toList(),
           )),
