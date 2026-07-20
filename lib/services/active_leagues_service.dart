@@ -1,6 +1,6 @@
 /*
 ===========================================
-ZSOLT AI PRO - TISZTA FOCI MOTOR (BUILD #057)
+ZSOLT AI PRO - 100% FOCI MOTOR (BUILD #058)
 File: lib/services/active_leagues_service.dart
 ===========================================
 */
@@ -17,7 +17,7 @@ class ActiveLeaguesService {
   DateTime? _lastFetchTime;
   static const Duration _cooldown = Duration(seconds: 60);
 
-  // KIZÁRÓLAG LABDARÚGÁS LIGÁK ID-JAI
+  // KIZÁRÓLAG LABDARÚGÁS LIGÁK ID-JAI (Baseball/MLB és egyéb sportok végleg törölve)
   final List<int> leagueIdsToFetch = [
     // Top Európai Bajnokságok és Kupák
     4328, 4335, 4331, 4332, 4334, 4480, 4481, 4337, 4339, 4330, 4333, 4336, 4340, 4351, 4418, 4380,
@@ -27,8 +27,8 @@ class ActiveLeaguesService {
     4396, 4392, 4424, 4434, 4426, 4437,
     // Ázsia & Ausztrália
     4451, 4440, 4441, 4366, 4443, 4465, 4466,
-    // Egyéb (MLS, Liga MX, Afrika)
-    4432, 4464, 4438, 4456
+    // Egyéb (Liga MX, Afrika, stb. - MLS Baseball ID-k kivéve)
+    4464, 4438, 4456
   ];
 
   Future<List<MatchModel>> loadMatches({bool forceRefresh = false}) async {
@@ -38,7 +38,7 @@ class ActiveLeaguesService {
       }
     }
 
-    log("Szerverről töltünk (Csak foci szűréssel)...");
+    log("Szerverről töltünk (Kizárólag tiszta foci szűréssel)...");
     
     final futures = leagueIdsToFetch.map((id) => _api.getNextLeagueMatches(id));
     final results = await Future.wait(futures);
