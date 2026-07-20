@@ -1,6 +1,6 @@
 /*
 ===========================================
-ZSOLT AI PRO - ROMÁN SZUPER LIGA HOZZÁADVA
+ZSOLT AI PRO - TELJES LIGA LISTA (ALL LEAGUES)
 File: lib/services/active_leagues_service.dart
 ===========================================
 */
@@ -14,16 +14,21 @@ class ActiveLeaguesService {
   ActiveLeaguesService();
   final ApiService _api = ApiService();
 
-  // Itt a lista, hozzáadva a Román Szuper Liga (ID: 4406)
   static const List<String> supportedLeagues = [
-    'Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'NB I', 'SuperLiga'
+    'Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1', 
+    'Eredivisie', 'Primeira Liga', 'SuperLiga', 'NB I', 'Champions League', 'Europa League'
   ];
 
   Future<List<MatchModel>> loadMatches() async {
     final List<MatchModel> allMatches = [];
     
-    // A Román Szuper Liga ID-ja: 4406
-    final List<int> leagueIdsToFetch = [4328, 4335, 4331, 4332, 4347, 4406];
+    // Az összes jelentős liga ID-ja a TheSportsDB-ből:
+    // 4328: PL, 4335: La Liga, 4331: Bundesliga, 4332: Serie A, 4334: Ligue 1, 
+    // 4337: Eredivisie, 4339: Primeira Liga, 4406: SuperLiga, 4347: NB I, 
+    // 4480: Champions League, 4481: Europa League
+    final List<int> leagueIdsToFetch = [
+      4328, 4335, 4331, 4332, 4334, 4337, 4339, 4406, 4347, 4480, 4481
+    ];
 
     for (int id in leagueIdsToFetch) {
       try {
@@ -44,6 +49,8 @@ class ActiveLeaguesService {
     }
 
     final result = uniqueMatches.values.toList();
+    
+    // Rendezés dátum szerint
     result.sort((a, b) => a.kickoff.compareTo(b.kickoff));
     
     log("Összesen betöltött meccsek száma: ${result.length}");
