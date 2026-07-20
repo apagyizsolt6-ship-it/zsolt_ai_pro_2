@@ -1,6 +1,6 @@
 /*
 ===========================================
-ZSOLT AI PRO - 100% FOCI MOTOR (BUILD #060)
+ZSOLT AI PRO - TELJES FOCI BŐVÍTÉS (BUILD #063)
 File: lib/services/active_leagues_service.dart
 ===========================================
 */
@@ -17,7 +17,6 @@ class ActiveLeaguesService {
   final ApiService _api = ApiService();
   List<MatchModel> _cachedMatches = [];
   DateTime? _lastFetchTime;
-  // A fájl miatt 15 percre emeltük a cooldown-t a stabilitás kedvéért
   static const Duration _cooldown = Duration(minutes: 15); 
 
   Future<String> get _localPath async {
@@ -30,41 +29,51 @@ class ActiveLeaguesService {
     return File('$path/matches_cache.json');
   }
 
+  // BŐVÍTETT FOCI ID LISTA - Minden fontosabb fociligát tartalmaz
   final List<int> leagueIdsToFetch = [
-    4328, 4335, 4331, 4332, 4334, 4480, 4481, 4337, 4339, 4330, 4333, 4336, 4340, 4351, 4418, 4380,
-    4370, 4371, 4346, 4416, 4391, 4387, 4396, 4392, 4424, 4434, 4426, 4437, 4451, 4440, 4441, 4366, 
-    4443, 4465, 4466, 4464, 4438, 4456
+    4328, 4329, 4331, 4332, 4334, 4335, 4336, 4337, 4338, 4339, 4340, 4344, 4346, 4351, 4354, 4356, 
+    4359, 4370, 4371, 4380, 4381, 4384, 4387, 4391, 4392, 4396, 4400, 4401, 4402, 4403, 4416, 4418, 
+    4422, 4424, 4426, 4434, 4437, 4438, 4440, 4441, 4443, 4451, 4456, 4464, 4465, 4466, 4480, 4481, 
+    4482, 4515
   ];
 
   Future<List<MatchModel>> loadMatches({bool forceRefresh = false}) async {
     final file = await _localFile;
 
-    // 1. Megpróbáljuk fájlból betölteni
     if (!forceRefresh && await file.exists()) {
       try {
         final contents = await file.readAsString();
         final List<dynamic> jsonData = json.decode(contents);
         _cachedMatches = jsonData.map((m) => MatchModel.fromJson(m)).toList();
-        _lastFetchTime = DateTime.now();
-        log("Adatok betöltve a fájlból (Cache hit).");
         return _cachedMatches;
       } catch (e) {
-        log("Hiba a fájl olvasásakor: $e");
+        log("Hiba a cache olvasásakor: $e");
       }
     }
 
-    // 2. Ha forceRefresh van vagy nincs fájl, jön az API hívás
-    log("Adatok letöltése az API-ból...");
+    log("Adatok frissítése az API-ból...");
     final futures = leagueIdsToFetch.map((id) => _api.getNextLeagueMatches(id));
     final results = await Future.wait(futures);
 
     final List<MatchModel> allMatches = [];
     for (var events in results) {
-      if (events.isNotEmpty) {
+      if (events != null && events.isNotEmpty) {
         final matches = MatchMapper.fromSportsDbList(events);
+        
+        // Eredeti logika + Bővített szűrés
         final validMatches = matches.where((m) => 
-          m.homeTeam.isNotEmpty && m.homeTeam != 'VS' && m.homeTeam != 'TBD'
+          m.homeTeam.isNotEmpty && 
+          m.homeTeam != 'VS' && 
+          m.homeTeam != 'TBD' &&
+          // KIZÁRÓLAG A NEM FOCIS SPORTÁGAK KIZÁRÁSA
+          !m.league.toLowerCase().contains('baseball') &&
+          !m.league.toLowerCase().contains('mlb') &&
+          !m.league.toLowerCase().contains('afl') &&
+          !m.league.toLowerCase().contains('rugby') &&
+          !m.league.toLowerCase().contains('cricket') &&
+          !m.league.toLowerCase().contains('basketball')
         ).toList();
+        
         allMatches.addAll(validMatches);
       }
     }
@@ -73,7 +82,6 @@ class ActiveLeaguesService {
     for (final match in allMatches) uniqueMatches[match.id] = match;
     _cachedMatches = uniqueMatches.values.toList()..sort((a, b) => a.kickoff.compareTo(b.kickoff));
     
-    // 3. Mentés fájlba
     await file.writeAsString(json.encode(_cachedMatches.map((m) => m.toJson()).toList()));
     _lastFetchTime = DateTime.now();
 
