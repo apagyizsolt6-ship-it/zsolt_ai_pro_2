@@ -1,69 +1,54 @@
 /*
 ===========================================
-ZSOLT AI PRO
-Version: v4.2.2
+ZSOLT AI PRO - DÁTUM ÉS IDŐPONT JAVÍTÁS
 File: lib/services/match_mapper.dart
 ===========================================
 */
 
 import '../models/match_model.dart';
+import 'dart:developer';
 
 class MatchMapper {
   const MatchMapper._();
 
   static MatchModel fromSportsDb(Map<String, dynamic> json) {
-    // 1. Alapadatok kinyerése biztonságosan
-    final homeTeam = (json['strHomeTeam'] ?? 'Ismeretlen').toString();
-    final awayTeam = (json['strAwayTeam'] ?? 'Ismeretlen').toString();
-    final league = (json['strLeague'] ?? 'Ismeretlen liga').toString();
-
-    // 2. Dátum és idő robusztus kezelése
-    final date = json['dateEvent']?.toString(); // Várható: "yyyy-mm-dd"
-    final time = json['strTime']?.toString();   // Várható: "HH:MM:SS" vagy üres
+    // 1. Dátum és idő kinyerése
+    final String date = json['dateEvent']?.toString() ?? '';
+    final String time = json['strTime']?.toString() ?? '00:00:00';
     
     DateTime kickoff;
     try {
-      if (date != null && date.isNotEmpty) {
-        // Ha van dátum, próbáljuk meg pars-olni
-        final timeString = (time != null && time.length >= 5) ? time.substring(0, 5) : '00:00';
-        kickoff = DateTime.parse('$date $timeString:00');
-      } else {
-        kickoff = DateTime.now().add(const Duration(days: 1)); // Ha nincs dátum, tegyük a jövőbe
-      }
-    } catch (_) {
-      kickoff = DateTime.now().add(const Duration(days: 1));
-    }
-
-    // 3. Státusz kezelése
-    MatchStatus status = MatchStatus.upcoming;
-    final statusText = (json['strStatus'] ?? '').toString().toLowerCase();
-
-    if (statusText.contains('live') || statusText == 'tt') {
-      status = MatchStatus.live;
-    } else if (statusText.contains('finished') || statusText == 'ft') {
-      status = MatchStatus.finished;
+      // A TheSportsDB dátum formátuma "yyyy-mm-dd", az időé "HH:MM:SS"
+      // Kombináljuk őket: "yyyy-mm-dd HH:MM:SS"
+      kickoff = DateTime.parse('$date $time');
+    } catch (e) {
+      log("Dátum formázási hiba: $e");
+      kickoff = DateTime.now();
     }
 
     return MatchModel(
       id: int.tryParse(json['idEvent']?.toString() ?? '') ?? 0,
-      league: league,
-      homeTeam: homeTeam,
-      awayTeam: awayTeam,
-      kickoff: kickoff,
-      aiScore: 0, 
+      league: (json['strLeague'] ?? '').toString(),
+      homeTeam: (json['strHomeTeam'] ?? '').toString(),
+      awayTeam: (json['strAwayTeam'] ?? '').toString(),
+      kickoff: kickoff, // Ez a pontos kezdési időpont
+      aiScore: 0,
       valueBet: false,
-      status: status,
+      status: _parseStatus(json['strStatus']?.toString()),
       homeOdd: null,
       drawOdd: null,
       awayOdd: null,
     );
   }
 
+  static MatchStatus _parseStatus(String? statusText) {
+    final s = (statusText ?? '').toLowerCase();
+    if (s.contains('live') || s == 'tt') return MatchStatus.live;
+    if (s.contains('finished') || s == 'ft') return MatchStatus.finished;
+    return MatchStatus.upcoming;
+  }
+
   static List<MatchModel> fromSportsDbList(List<Map<String, dynamic>> events) {
-    // Itt szűrjük ki a hibás (id=0) elemeket már a konverzió során
-    return events
-        .map(fromSportsDb)
-        .where((match) => match.id != 0)
-        .toList();
+    return events.map(fromSportsDb).toList();
   }
 }
