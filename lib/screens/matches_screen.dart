@@ -1,9 +1,8 @@
 /*
 ===========================================
 ZSOLT AI PRO
-Version: v1.3.0
-File: matches_screen.dart
-Build: #050
+File: lib/screens/matches_screen.dart
+Build: #052 - VÉGLEGES DÁTUM ÉS IDŐZÓNA JAVÍTÁS
 ===========================================
 */
 
@@ -82,20 +81,6 @@ class _MatchesScreenState extends State<MatchesScreen> {
     return matches;
   }
 
-  Color _leagueColor(String league) {
-    // Itt nyugodtan bővítheted bármelyik bajnoksággal
-    switch (league) {
-      case 'Premier League': return Colors.amber;
-      case 'La Liga': return Colors.redAccent;
-      case 'Serie A': return Colors.blueAccent;
-      case 'Bundesliga': return Colors.orange;
-      case 'NB I': return Colors.green;
-      case 'Champions League': return Colors.purple;
-      case 'Europa League': return Colors.blueGrey;
-      default: return Colors.white; // Minden egyéb bajnokság fehér marad
-    }
-  }
-
   @override
   void dispose() {
     _searchController.dispose();
@@ -105,15 +90,15 @@ class _MatchesScreenState extends State<MatchesScreen> {
   Widget build(BuildContext context) {
     final matches = _filteredMatches;
 
-    // Dátum szerinti csoportosítás (év-hónap-nap)
+    // Dátum szerinti csoportosítás (helyi idő alapján)
     final Map<String, List<MatchModel>> groupedMatches = {};
 
     for (final match in matches) {
-      final dateKey = DateFormat('yyyy-MM-dd').format(match.kickoff);
+      final localDate = match.kickoff.toLocal();
+      final dateKey = DateFormat('yyyy-MM-dd').format(localDate);
       groupedMatches.putIfAbsent(dateKey, () => []).add(match);
     }
 
-    // A kulcsok rendezése dátum szerint
     final sortedKeys = groupedMatches.keys.toList()..sort();
 
     return Scaffold(
@@ -123,7 +108,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
         backgroundColor: const Color(0xFF0E1117),
         centerTitle: true,
         title: const Text(
-          "Mai mérkőzések",
+          "Mérkőzések",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
@@ -138,9 +123,9 @@ class _MatchesScreenState extends State<MatchesScreen> {
                       children: [
                         const Icon(Icons.cloud_off, color: Colors.red, size: 70),
                         const SizedBox(height: 20),
-                        const Text("Nem sikerült betölteni a mérkőzéseket.", textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 24),
-                        ElevatedButton.icon(onPressed: _loadMatches, icon: const Icon(Icons.refresh), label: const Text("Újrapróbálás")),
+                        const Text("Hiba történt a betöltéskor.", style: TextStyle(color: Colors.white, fontSize: 18)),
+                        const SizedBox(height: 20),
+                        ElevatedButton(onPressed: _loadMatches, child: const Text("Újra")),
                       ],
                     ),
                   ),
@@ -156,15 +141,9 @@ class _MatchesScreenState extends State<MatchesScreen> {
                         child: const Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Icon(Icons.sports_soccer_rounded, color: Colors.white, size: 42),
-                                SizedBox(width: 14),
-                                Expanded(child: Text("Mérkőzések", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold))),
-                              ],
-                            ),
-                            SizedBox(height: 16),
-                            Text("Összes elérhető bajnokság adatai", style: TextStyle(color: Colors.white70, fontSize: 15)),
+                            Text("Összes bajnokság", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                            SizedBox(height: 8),
+                            Text("Élő adatok a TheSportsDB rendszeréből", style: TextStyle(color: Colors.white70)),
                           ],
                         ),
                       ),
@@ -173,7 +152,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
                         controller: _searchController,
                         onChanged: (value) => setState(() => _searchText = value),
                         decoration: InputDecoration(
-                          hintText: "Csapat vagy liga keresése...",
+                          hintText: "Keresés (csapat, liga)...",
                           prefixIcon: const Icon(Icons.search),
                           filled: true,
                           fillColor: Colors.white10,
@@ -198,17 +177,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
                       ),
                       const SizedBox(height: 22),
                       if (matches.isEmpty)
-                        Container(
-                          padding: const EdgeInsets.all(32),
-                          alignment: Alignment.center,
-                          child: const Column(
-                            children: [
-                              Icon(Icons.search_off_rounded, size: 64, color: Colors.white38),
-                              SizedBox(height: 16),
-                              Text("Nincs találat", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                        )
+                        const Center(child: Padding(padding: EdgeInsets.all(30), child: Text("Nincs találat", style: TextStyle(color: Colors.white54)))),
                       else
                         ...sortedKeys.map((date) {
                           final dailyMatches = groupedMatches[date]!;
@@ -216,23 +185,19 @@ class _MatchesScreenState extends State<MatchesScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                child: Text(
-                                  date,
-                                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                child: Text(date, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                               ),
                               ...dailyMatches.map(
                                 (match) => MatchCard(
                                   league: match.league,
                                   homeTeam: match.homeTeam,
                                   awayTeam: match.awayTeam,
-                                  kickoff: match.kickoff,
+                                  kickoff: match.kickoff.toLocal(),
                                   aiScore: match.aiScore,
                                   isValueBet: match.valueBet,
                                 ),
                               ),
-                              const SizedBox(height: 24),
                             ],
                           );
                         }),
@@ -249,10 +214,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-        decoration: BoxDecoration(
-          color: selected ? const Color(0xFF1565FF) : Colors.white10,
-          borderRadius: BorderRadius.circular(22),
-        ),
+        decoration: BoxDecoration(color: selected ? const Color(0xFF1565FF) : Colors.white10, borderRadius: BorderRadius.circular(22)),
         child: Text(text, style: TextStyle(color: selected ? Colors.white : Colors.white70, fontWeight: FontWeight.bold)),
       ),
     );
