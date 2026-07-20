@@ -3,7 +3,7 @@
 ZSOLT AI PRO
 Version: v1.3.0
 File: matches_screen.dart
-Build: #049
+Build: #050
 ===========================================
 */
 
@@ -14,12 +14,7 @@ import '../models/match_model.dart';
 import '../services/active_leagues_service.dart';
 import '../widgets/matches/match_card.dart';
 
-enum MatchFilter {
-  all,
-  aiTop,
-  valueBet,
-  live,
-}
+enum MatchFilter { all, aiTop, valueBet, live }
 
 class MatchesScreen extends StatefulWidget {
   const MatchesScreen({super.key});
@@ -53,7 +48,6 @@ class _MatchesScreenState extends State<MatchesScreen> {
     try {
       final matches = await _service.loadMatches();
       if (!mounted) return;
-
       setState(() {
         _matches = matches;
         _loading = false;
@@ -72,11 +66,11 @@ class _MatchesScreenState extends State<MatchesScreen> {
 
     if (_searchText.isNotEmpty) {
       final query = _searchText.toLowerCase();
-      matches = matches.where((match) {
-        return match.homeTeam.toLowerCase().contains(query) ||
-            match.awayTeam.toLowerCase().contains(query) ||
-            match.league.toLowerCase().contains(query);
-      }).toList();
+      matches = matches.where((m) => 
+        m.homeTeam.toLowerCase().contains(query) || 
+        m.awayTeam.toLowerCase().contains(query) || 
+        m.league.toLowerCase().contains(query)
+      ).toList();
     }
 
     switch (_selectedFilter) {
@@ -89,13 +83,16 @@ class _MatchesScreenState extends State<MatchesScreen> {
   }
 
   Color _leagueColor(String league) {
+    // Itt nyugodtan bővítheted bármelyik bajnoksággal
     switch (league) {
       case 'Premier League': return Colors.amber;
       case 'La Liga': return Colors.redAccent;
       case 'Serie A': return Colors.blueAccent;
       case 'Bundesliga': return Colors.orange;
       case 'NB I': return Colors.green;
-      default: return Colors.white;
+      case 'Champions League': return Colors.purple;
+      case 'Europa League': return Colors.blueGrey;
+      default: return Colors.white; // Minden egyéb bajnokság fehér marad
     }
   }
 
@@ -163,11 +160,11 @@ class _MatchesScreenState extends State<MatchesScreen> {
                               children: [
                                 Icon(Icons.sports_soccer_rounded, color: Colors.white, size: 42),
                                 SizedBox(width: 14),
-                                Expanded(child: Text("Mai mérkőzések", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold))),
+                                Expanded(child: Text("Mérkőzések", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold))),
                               ],
                             ),
                             SizedBox(height: 16),
-                            Text("Élő adatok a TheSportsDB rendszeréből", style: TextStyle(color: Colors.white70, fontSize: 15)),
+                            Text("Összes elérhető bajnokság adatai", style: TextStyle(color: Colors.white70, fontSize: 15)),
                           ],
                         ),
                       ),
@@ -208,7 +205,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
                             children: [
                               Icon(Icons.search_off_rounded, size: 64, color: Colors.white38),
                               SizedBox(height: 16),
-                              Text("Nincs elérhető mérkőzés", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                              Text("Nincs találat", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                             ],
                           ),
                         )
@@ -219,9 +216,9 @@ class _MatchesScreenState extends State<MatchesScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Padding(
-                                padding: const EdgeInsets.only(top: 10, bottom: 10),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
                                 child: Text(
-                                  date, // Itt jelenik meg a dátum
+                                  date,
                                   style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                                 ),
                               ),
@@ -258,21 +255,6 @@ class _MatchesScreenState extends State<MatchesScreen> {
         ),
         child: Text(text, style: TextStyle(color: selected ? Colors.white : Colors.white70, fontWeight: FontWeight.bold)),
       ),
-    );
-  }
-
-  Widget _leagueHeader(String league, int count, Color color) {
-    return Row(
-      children: [
-        Icon(Icons.emoji_events_rounded, color: color),
-        const SizedBox(width: 8),
-        Expanded(child: Text(league, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold))),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(20)),
-          child: Text("$count meccs", style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w600)),
-        ),
-      ],
     );
   }
 }
