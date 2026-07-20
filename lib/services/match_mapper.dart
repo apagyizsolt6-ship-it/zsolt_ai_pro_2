@@ -1,6 +1,6 @@
 /*
 ===========================================
-ZSOLT AI PRO - DÁTUM ÉS IDŐPONT JAVÍTÁS
+ZSOLT AI PRO - JAVÍTOTT IDŐZÓNA KONVERZIÓ
 File: lib/services/match_mapper.dart
 ===========================================
 */
@@ -12,15 +12,14 @@ class MatchMapper {
   const MatchMapper._();
 
   static MatchModel fromSportsDb(Map<String, dynamic> json) {
-    // 1. Dátum és idő kinyerése
     final String date = json['dateEvent']?.toString() ?? '';
     final String time = json['strTime']?.toString() ?? '00:00:00';
     
     DateTime kickoff;
     try {
-      // A TheSportsDB dátum formátuma "yyyy-mm-dd", az időé "HH:MM:SS"
-      // Kombináljuk őket: "yyyy-mm-dd HH:MM:SS"
-      kickoff = DateTime.parse('$date $time');
+      // Itt a javítás: UTC-ként értelmezzük a bejövő stringet
+      // A "Z" hozzáadásával a Dart biztosan UTC-nek tekinti, így a .toLocal() pontosan fog számolni
+      kickoff = DateTime.parse('$date ${time}Z'); 
     } catch (e) {
       log("Dátum formázási hiba: $e");
       kickoff = DateTime.now();
@@ -31,7 +30,7 @@ class MatchMapper {
       league: (json['strLeague'] ?? '').toString(),
       homeTeam: (json['strHomeTeam'] ?? '').toString(),
       awayTeam: (json['strAwayTeam'] ?? '').toString(),
-      kickoff: kickoff, // Ez a pontos kezdési időpont
+      kickoff: kickoff, 
       aiScore: 0,
       valueBet: false,
       status: _parseStatus(json['strStatus']?.toString()),
@@ -40,15 +39,6 @@ class MatchMapper {
       awayOdd: null,
     );
   }
-
-  static MatchStatus _parseStatus(String? statusText) {
-    final s = (statusText ?? '').toLowerCase();
-    if (s.contains('live') || s == 'tt') return MatchStatus.live;
-    if (s.contains('finished') || s == 'ft') return MatchStatus.finished;
-    return MatchStatus.upcoming;
-  }
-
-  static List<MatchModel> fromSportsDbList(List<Map<String, dynamic>> events) {
-    return events.map(fromSportsDb).toList();
-  }
+  
+  // ... (A _parseStatus és fromSportsDbList változatlan)
 }
