@@ -1,8 +1,7 @@
 /*
 ===========================================
-ZSOLT AI PRO
+ZSOLT AI PRO - TELJES FÁJL (BUILD #053)
 File: lib/screens/matches_screen.dart
-Build: #052 - VÉGLEGES DÁTUM ÉS IDŐZÓNA JAVÍTÁS
 ===========================================
 */
 
@@ -43,7 +42,6 @@ class _MatchesScreenState extends State<MatchesScreen> {
       _loading = true;
       _error = null;
     });
-
     try {
       final matches = await _service.loadMatches();
       if (!mounted) return;
@@ -62,16 +60,10 @@ class _MatchesScreenState extends State<MatchesScreen> {
 
   List<MatchModel> get _filteredMatches {
     List<MatchModel> matches = List.from(_matches);
-
     if (_searchText.isNotEmpty) {
       final query = _searchText.toLowerCase();
-      matches = matches.where((m) => 
-        m.homeTeam.toLowerCase().contains(query) || 
-        m.awayTeam.toLowerCase().contains(query) || 
-        m.league.toLowerCase().contains(query)
-      ).toList();
+      matches = matches.where((m) => m.homeTeam.toLowerCase().contains(query) || m.awayTeam.toLowerCase().contains(query) || m.league.toLowerCase().contains(query)).toList();
     }
-
     switch (_selectedFilter) {
       case MatchFilter.all: break;
       case MatchFilter.aiTop: matches = matches.where((m) => m.aiScore >= 90).toList(); break;
@@ -86,11 +78,10 @@ class _MatchesScreenState extends State<MatchesScreen> {
     _searchController.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     final matches = _filteredMatches;
-
-    // Dátum szerinti csoportosítás (helyi idő alapján)
     final Map<String, List<MatchModel>> groupedMatches = {};
 
     for (final match in matches) {
@@ -98,112 +89,37 @@ class _MatchesScreenState extends State<MatchesScreen> {
       final dateKey = DateFormat('yyyy-MM-dd').format(localDate);
       groupedMatches.putIfAbsent(dateKey, () => []).add(match);
     }
-
     final sortedKeys = groupedMatches.keys.toList()..sort();
 
     return Scaffold(
       backgroundColor: const Color(0xFF0E1117),
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: const Color(0xFF0E1117),
-        centerTitle: true,
-        title: const Text(
-          "Mérkőzések",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
+      appBar: AppBar(elevation: 0, backgroundColor: const Color(0xFF0E1117), centerTitle: true, title: const Text("Mérkőzések", style: TextStyle(fontWeight: FontWeight.bold))),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.cloud_off, color: Colors.red, size: 70),
-                        const SizedBox(height: 20),
-                        const Text("Hiba történt a betöltéskor.", style: TextStyle(color: Colors.white, fontSize: 18)),
-                        const SizedBox(height: 20),
-                        ElevatedButton(onPressed: _loadMatches, child: const Text("Újra")),
-                      ],
-                    ),
-                  ),
-                )
+          : (_error != null
+              ? Center(child: Padding(padding: const EdgeInsets.all(24), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.cloud_off, color: Colors.red, size: 70), const SizedBox(height: 20), const Text("Hiba történt.", style: TextStyle(color: Colors.white)), const SizedBox(height: 20), ElevatedButton(onPressed: _loadMatches, child: const Text("Újra"))])))
               : RefreshIndicator(
                   onRefresh: _loadMatches,
                   child: ListView(
                     padding: const EdgeInsets.all(16),
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(gradient: const LinearGradient(colors: [Color(0xFF1565FF), Color(0xFF7B3FFF)]), borderRadius: BorderRadius.circular(24)),
-                        child: const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Összes bajnokság", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                            SizedBox(height: 8),
-                            Text("Élő adatok a TheSportsDB rendszeréből", style: TextStyle(color: Colors.white70)),
-                          ],
-                        ),
-                      ),
+                      const Text("Mérkőzések", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 20),
-                      TextField(
-                        controller: _searchController,
-                        onChanged: (value) => setState(() => _searchText = value),
-                        decoration: InputDecoration(
-                          hintText: "Keresés (csapat, liga)...",
-                          prefixIcon: const Icon(Icons.search),
-                          filled: true,
-                          fillColor: Colors.white10,
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide.none),
-                        ),
-                      ),
+                      TextField(controller: _searchController, onChanged: (value) => setState(() => _searchText = value), decoration: InputDecoration(hintText: "Keresés...", prefixIcon: const Icon(Icons.search), filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide.none))),
                       const SizedBox(height: 18),
-                      SizedBox(
-                        height: 44,
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: [
-                            _chip("Összes", MatchFilter.all),
-                            const SizedBox(width: 10),
-                            _chip("AI TOP", MatchFilter.aiTop),
-                            const SizedBox(width: 10),
-                            _chip("VALUE BET", MatchFilter.valueBet),
-                            const SizedBox(width: 10),
-                            _chip("Élő", MatchFilter.live),
-                          ],
-                        ),
-                      ),
+                      SizedBox(height: 44, child: ListView(scrollDirection: Axis.horizontal, children: [_chip("Összes", MatchFilter.all), const SizedBox(width: 10), _chip("AI TOP", MatchFilter.aiTop), const SizedBox(width: 10), _chip("VALUE BET", MatchFilter.valueBet), const SizedBox(width: 10), _chip("Élő", MatchFilter.live)])),
                       const SizedBox(height: 22),
-                      if (matches.isEmpty)
-                        const Center(child: Padding(padding: EdgeInsets.all(30), child: Text("Nincs találat", style: TextStyle(color: Colors.white54)))),
-                      else
-                        ...sortedKeys.map((date) {
-                          final dailyMatches = groupedMatches[date]!;
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                child: Text(date, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                              ),
-                              ...dailyMatches.map(
-                                (match) => MatchCard(
-                                  league: match.league,
-                                  homeTeam: match.homeTeam,
-                                  awayTeam: match.awayTeam,
-                                  kickoff: match.kickoff.toLocal(),
-                                  aiScore: match.aiScore,
-                                  isValueBet: match.valueBet,
-                                ),
-                              ),
-                            ],
-                          );
-                        }),
+                      if (matches.isEmpty) const Center(child: Padding(padding: EdgeInsets.all(30), child: Text("Nincs találat", style: TextStyle(color: Colors.white54))))
+                      else ...sortedKeys.map((date) {
+                        final dailyMatches = groupedMatches[date]!;
+                        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Padding(padding: const EdgeInsets.symmetric(vertical: 16), child: Text(date, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold))),
+                          ...dailyMatches.map((match) => MatchCard(league: match.league, homeTeam: match.homeTeam, awayTeam: match.awayTeam, kickoff: match.kickoff.toLocal(), aiScore: match.aiScore, isValueBet: match.valueBet)),
+                        ]);
+                      }),
                     ],
                   ),
-                ),
+                )),
     );
   }
 
@@ -211,12 +127,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
     final selected = _selectedFilter == filter;
     return GestureDetector(
       onTap: () => setState(() => _selectedFilter = filter),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-        decoration: BoxDecoration(color: selected ? const Color(0xFF1565FF) : Colors.white10, borderRadius: BorderRadius.circular(22)),
-        child: Text(text, style: TextStyle(color: selected ? Colors.white : Colors.white70, fontWeight: FontWeight.bold)),
-      ),
+      child: AnimatedContainer(duration: const Duration(milliseconds: 200), padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10), decoration: BoxDecoration(color: selected ? const Color(0xFF1565FF) : Colors.white10, borderRadius: BorderRadius.circular(22)), child: Text(text, style: TextStyle(color: selected ? Colors.white : Colors.white70, fontWeight: FontWeight.bold))),
     );
   }
 }
