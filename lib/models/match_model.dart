@@ -1,8 +1,7 @@
 /*
 ===========================================
 ZSOLT AI PRO
-Version: v1.2.0
-Build #031
+Version: v1.2.0 (PERSISTENCE READY)
 File: match_model.dart
 ===========================================
 */
@@ -15,20 +14,13 @@ enum MatchStatus {
 
 class MatchModel {
   final int id;
-
   final String league;
-
   final String homeTeam;
   final String awayTeam;
-
   final DateTime kickoff;
-
   final int aiScore;
-
   final bool valueBet;
-
   final MatchStatus status;
-
   final double? homeOdd;
   final double? drawOdd;
   final double? awayOdd;
@@ -47,18 +39,47 @@ class MatchModel {
     this.awayOdd,
   });
 
+  // --- JSON/FÁJL KONVERZIÓK A MENTÉSHEZ ---
+
+  factory MatchModel.fromJson(Map<String, dynamic> json) {
+    return MatchModel(
+      id: json['id'] as int,
+      league: json['league'] as String,
+      homeTeam: json['homeTeam'] as String,
+      awayTeam: json['awayTeam'] as String,
+      kickoff: DateTime.parse(json['kickoff'] as String),
+      aiScore: json['aiScore'] as int,
+      valueBet: json['valueBet'] as bool,
+      status: MatchStatus.values.firstWhere((e) => e.name == json['status']),
+      homeOdd: json['homeOdd']?.toDouble(),
+      drawOdd: json['drawOdd']?.toDouble(),
+      awayOdd: json['awayOdd']?.toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'league': league,
+      'homeTeam': homeTeam,
+      'awayTeam': awayTeam,
+      'kickoff': kickoff.toIso8601String(),
+      'aiScore': aiScore,
+      'valueBet': valueBet,
+      'status': status.name,
+      'homeOdd': homeOdd,
+      'drawOdd': drawOdd,
+      'awayOdd': awayOdd,
+    };
+  }
+
+  // --- EREDETI LOGIKA ---
+
   String get matchTitle => '$homeTeam vs $awayTeam';
-
   bool get isLive => status == MatchStatus.live;
-
   bool get isFinished => status == MatchStatus.finished;
-
   bool get isUpcoming => status == MatchStatus.upcoming;
-
-  bool get hasOdds =>
-      homeOdd != null &&
-      drawOdd != null &&
-      awayOdd != null;
+  bool get hasOdds => homeOdd != null && drawOdd != null && awayOdd != null;
 
   MatchModel copyWith({
     int? id,
@@ -90,12 +111,6 @@ class MatchModel {
 
   @override
   String toString() {
-    return 'MatchModel('
-        'id: $id, '
-        'league: $league, '
-        'match: $homeTeam vs $awayTeam, '
-        'aiScore: $aiScore, '
-        'status: $status'
-        ')';
+    return 'MatchModel(id: $id, match: $homeTeam vs $awayTeam, aiScore: $aiScore, status: $status)';
   }
 }
