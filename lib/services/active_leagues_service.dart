@@ -1,6 +1,6 @@
 /*
 ===========================================
-ZSOLT AI PRO - TISZTA FOCI MOTOR (BUILD #056)
+ZSOLT AI PRO - TISZTA FOCI MOTOR (BUILD #057)
 File: lib/services/active_leagues_service.dart
 ===========================================
 */
@@ -17,10 +17,18 @@ class ActiveLeaguesService {
   DateTime? _lastFetchTime;
   static const Duration _cooldown = Duration(seconds: 60);
 
-  // CSAK FOCI LIGÁK ID-JAI (Formula E és egyéb sportok törölve)
+  // KIZÁRÓLAG LABDARÚGÁS LIGÁK ID-JAI
   final List<int> leagueIdsToFetch = [
-    4328, 4335, 4331, 4332, 4334, 4480, 4481, 4337, 4339, 4330, 4333, 4336, 4340, 4351, 4418, 4380, 4370, 4371, 4346, 4416, 4391, 4387,
-    4396, 4392, 4424, 4434, 4426, 4437, 4451, 4440, 4441, 4366, 4443, 4465, 4466, 4432, 4464, 4438, 4456
+    // Top Európai Bajnokságok és Kupák
+    4328, 4335, 4331, 4332, 4334, 4480, 4481, 4337, 4339, 4330, 4333, 4336, 4340, 4351, 4418, 4380,
+    // Észak-Európa és Baltikum
+    4370, 4371, 4346, 4416, 4391, 4387,
+    // Dél-Amerika
+    4396, 4392, 4424, 4434, 4426, 4437,
+    // Ázsia & Ausztrália
+    4451, 4440, 4441, 4366, 4443, 4465, 4466,
+    // Egyéb (MLS, Liga MX, Afrika)
+    4432, 4464, 4438, 4456
   ];
 
   Future<List<MatchModel>> loadMatches({bool forceRefresh = false}) async {
@@ -39,18 +47,19 @@ class ActiveLeaguesService {
     for (var events in results) {
       if (events.isNotEmpty) {
         final matches = MatchMapper.fromSportsDbList(events);
-        // SZŰRÉS: Csak azokat tartjuk meg, ahol van két csapatnév, és nem "VS"
+        // FOCI SZŰRÉS: Csak valós csapatnevekkel rendelkező meccsek
         final validMatches = matches.where((m) => 
           m.homeTeam.isNotEmpty && 
           m.awayTeam.isNotEmpty && 
           m.homeTeam != 'VS' && 
-          m.homeTeam != ''
+          m.homeTeam != 'TBD'
         ).toList();
         
         allMatches.addAll(validMatches);
       }
     }
 
+    // Egyediség biztosítása és dátum szerinti rendezés
     final Map<int, MatchModel> uniqueMatches = {};
     for (final match in allMatches) uniqueMatches[match.id] = match;
     
