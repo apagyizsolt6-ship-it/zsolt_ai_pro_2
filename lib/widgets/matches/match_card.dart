@@ -1,126 +1,60 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; 
+import 'package:intl/intl.dart';
 import '../../screens/match_detail_screen.dart';
-
-/// ===========================================
-/// ZSOLT AI PRO - VÉGLEGES MECCSKÁRTYA
-/// File: lib/widgets/match_card.dart
-/// ===========================================
+import '../../models/match_model.dart';
 
 class MatchCard extends StatelessWidget {
-  final String league;
   final String homeTeam;
   final String awayTeam;
-  final DateTime kickoff; // Módosítva DateTime-re
+  final DateTime kickoff;
   final int aiScore;
   final bool isValueBet;
-  final VoidCallback? onTap;
+  final MatchStatus status; // Fontos: státusz lekérése
 
   const MatchCard({
     super.key,
-    required this.league,
     required this.homeTeam,
     required this.awayTeam,
     required this.kickoff,
     required this.aiScore,
     this.isValueBet = false,
-    this.onTap,
+    required this.status,
   });
-
-  Color get _aiColor {
-    if (aiScore >= 90) return Colors.green;
-    if (aiScore >= 80) return Colors.orange;
-    if (aiScore >= 70) return Colors.blue;
-    return Colors.grey;
-  }
-
-  double get _progress => aiScore / 100;
-
-  void _openMatch(BuildContext context) {
-    if (onTap != null) {
-      onTap!();
-      return;
-    }
-
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => MatchDetailScreen(
-          league: league,
-          homeTeam: homeTeam,
-          awayTeam: awayTeam,
-          kickoff: kickoff.toString(),
-          aiScore: aiScore,
-          isValueBet: isValueBet,
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
+    final bool isLive = status == MatchStatus.live;
+
     return Card(
-      elevation: 10,
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      elevation: 0,
+      color: Colors.transparent,
+      margin: const EdgeInsets.symmetric(vertical: 6),
       child: InkWell(
-        borderRadius: BorderRadius.circular(24),
-        onTap: () => _openMatch(context),
+        onTap: () { /* Navigáció logikád ide */ },
         child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Column(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
             children: [
-              Row(
-                children: [
-                  const CircleAvatar(radius: 22, backgroundColor: Color(0xFF1565FF), child: Icon(Icons.sports_soccer_rounded, color: Colors.white)),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(league, style: const TextStyle(color: Color(0xFF1565FF), fontWeight: FontWeight.bold, fontSize: 13)),
-                        const SizedBox(height: 4),
-                        const Text("AI elemzett mérkőzés", style: TextStyle(color: Colors.grey, fontSize: 12)),
-                      ],
-                    ),
-                  ),
-                  IconButton(onPressed: () {}, icon: const Icon(Icons.star_border_rounded)),
-                ],
+              // Időpont vagy Élő jelző
+              SizedBox(
+                width: 60,
+                child: isLive 
+                  ? const Text("ÉLŐ", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))
+                  : Text(DateFormat('HH:mm').format(kickoff), style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
-              const SizedBox(height: 18),
-              Row(
-                children: [
-                  Expanded(child: Text(homeTeam, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold))),
-                  const Text("VS", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
-                  Expanded(child: Text(awayTeam, textAlign: TextAlign.end, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold))),
-                ],
-              ),
-              const SizedBox(height: 18),
-              LinearProgressIndicator(value: _progress, minHeight: 8, borderRadius: BorderRadius.circular(20), valueColor: AlwaysStoppedAnimation(_aiColor), backgroundColor: Colors.grey.shade300),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7), decoration: BoxDecoration(color: _aiColor, borderRadius: BorderRadius.circular(20)), child: Text("AI $aiScore%", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
-                  if (isValueBet) ...[
-                    const SizedBox(width: 10),
-                    Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7), decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)), child: const Row(children: [Icon(Icons.local_fire_department_rounded, color: Colors.green, size: 16), SizedBox(width: 6), Text("VALUE BET", style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 11))])),
+              // Csapatnevek
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(child: Text(homeTeam, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                    const Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text("—", style: TextStyle(color: Colors.grey))),
+                    Expanded(child: Text(awayTeam, textAlign: TextAlign.right, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
                   ],
-                  const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                    decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(20)),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.schedule_rounded, size: 16, color: Colors.grey),
-                        const SizedBox(width: 6),
-                        Text(
-                          DateFormat('MM.dd. HH:mm').format(kickoff), // Dátum és idő megjelenítése
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
+              const SizedBox(width: 16),
+              // AI Százalék
+              Text("AI $aiScore%", style: TextStyle(color: aiScore > 80 ? Colors.green : Colors.grey, fontWeight: FontWeight.bold)),
             ],
           ),
         ),
