@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../screens/match_detail_screen.dart';
 import '../../models/match_model.dart';
+import '../../screens/match_detail_screen.dart';
 
 class MatchCard extends StatelessWidget {
   final String homeTeam;
@@ -9,7 +9,8 @@ class MatchCard extends StatelessWidget {
   final DateTime kickoff;
   final int aiScore;
   final bool isValueBet;
-  final MatchStatus status; // Fontos: státusz lekérése
+  final MatchStatus status;
+  final String league; // Szükséges a részletes oldalhoz
 
   const MatchCard({
     super.key,
@@ -17,44 +18,89 @@ class MatchCard extends StatelessWidget {
     required this.awayTeam,
     required this.kickoff,
     required this.aiScore,
-    this.isValueBet = false,
     required this.status,
+    required this.league,
+    this.isValueBet = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final bool isLive = status == MatchStatus.live;
 
-    return Card(
-      elevation: 0,
-      color: Colors.transparent,
-      margin: const EdgeInsets.symmetric(vertical: 6),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Colors.white10)),
+      ),
       child: InkWell(
-        onTap: () { /* Navigáció logikád ide */ },
+        onTap: () {
+          // Kattintásra megnyitjuk a részletes oldalt
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => MatchDetailScreen(
+                league: league,
+                homeTeam: homeTeam,
+                awayTeam: awayTeam,
+                kickoff: kickoff.toString(),
+                aiScore: aiScore,
+                isValueBet: isValueBet,
+              ),
+            ),
+          );
+        },
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 12),
           child: Row(
             children: [
-              // Időpont vagy Élő jelző
               SizedBox(
-                width: 60,
-                child: isLive 
-                  ? const Text("ÉLŐ", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))
-                  : Text(DateFormat('HH:mm').format(kickoff), style: const TextStyle(fontWeight: FontWeight.bold)),
+                width: 50,
+                child: Text(
+                  isLive ? "ÉLŐ" : DateFormat('HH:mm').format(kickoff),
+                  style: TextStyle(
+                    color: isLive ? Colors.red : Colors.grey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-              // Csapatnevek
               Expanded(
                 child: Row(
                   children: [
-                    Expanded(child: Text(homeTeam, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
-                    const Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text("—", style: TextStyle(color: Colors.grey))),
-                    Expanded(child: Text(awayTeam, textAlign: TextAlign.right, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                    Expanded(
+                      child: Text(
+                        homeTeam,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: Text("-", style: TextStyle(color: Colors.white30)),
+                    ),
+                    Expanded(
+                      child: Text(
+                        awayTeam,
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
               const SizedBox(width: 16),
-              // AI Százalék
-              Text("AI $aiScore%", style: TextStyle(color: aiScore > 80 ? Colors.green : Colors.grey, fontWeight: FontWeight.bold)),
+              Text(
+                "AI $aiScore%",
+                style: TextStyle(
+                  color: aiScore >= 90 ? Colors.green : Colors.grey,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
         ),
