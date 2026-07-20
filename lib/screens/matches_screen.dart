@@ -20,12 +20,17 @@ class _MatchesScreenState extends State<MatchesScreen> {
   String? _selectedDate;
   MatchFilter _selectedFilter = MatchFilter.all;
 
-  final Map<String, String> _leagueTranslation = {
-    "Club Friendlies": "Barátságos klubmérkőzések",
-    "Argentinian Primera C": "Argentin Primera C",
-    "Copa Paulista": "Copa Paulista",
-    "Argentinian Primera B Nacional": "Argentin Primera B Nacional",
-  };
+  // OKOS AUTOMATA: A bajnokság neveit itt tisztítjuk meg
+  String _formatLeagueName(String name) {
+    String clean = name
+        .replaceAll("Division", "Osztály")
+        .replaceAll("League", "Liga")
+        .replaceAll("Friendlies", "Barátságos mérkőzések")
+        .replaceAll("Premier", "Premier")
+        .replaceAll("National", "Nemzeti")
+        .trim();
+    return clean.toUpperCase();
+  }
 
   @override
   void initState() {
@@ -37,9 +42,12 @@ class _MatchesScreenState extends State<MatchesScreen> {
     setState(() => _loading = true);
     final matches = await _service.loadMatches(forceRefresh: force);
     if (!mounted) return;
+    
+    final dates = matches.map((m) => DateFormat('yyyy-MM-dd').format(m.kickoff.toLocal())).toSet().toList()..sort();
+    
     setState(() {
       _matches = matches;
-      _selectedDate = matches.isNotEmpty ? DateFormat('yyyy-MM-dd').format(matches.first.kickoff.toLocal()) : null;
+      _selectedDate = dates.isNotEmpty ? dates.first : null;
       _loading = false;
     });
   }
@@ -50,17 +58,19 @@ class _MatchesScreenState extends State<MatchesScreen> {
     
     final filtered = _matches.where((m) {
       final dateMatch = DateFormat('yyyy-MM-dd').format(m.kickoff.toLocal()) == _selectedDate;
-      final finishedMatch = m.status != MatchStatus.finished;
+      final isNotFinished = m.status != MatchStatus.finished;
       bool filterMatch = true;
       if (_selectedFilter == MatchFilter.aiTop) filterMatch = m.aiScore >= 90;
       if (_selectedFilter == MatchFilter.valueBet) filterMatch = m.valueBet;
       if (_selectedFilter == MatchFilter.live) filterMatch = m.status == MatchStatus.live;
-      return dateMatch && finishedMatch && filterMatch;
+      return dateMatch && isNotFinished && filterMatch;
     }).toList();
 
     final Map<String, List<MatchModel>> grouped = {};
     for (var m in filtered) {
-      grouped.putIfAbsent(m.league, () => []).add(m);
+      // Itt hívjuk meg az automatikus formázót:
+      final formattedName = _formatLeagueName(m.league);
+      grouped.putIfAbsent(formattedName, () => []).add(m);
     }
 
     return Scaffold(
@@ -72,10 +82,9 @@ class _MatchesScreenState extends State<MatchesScreen> {
           _buildFilters(),
           Expanded(child: ListView(
             children: grouped.entries.map((entry) {
-              final displayName = _leagueTranslation[entry.key] ?? entry.key;
               final sortedMatches = entry.value..sort((a, b) => b.status.index.compareTo(a.status.index));
               return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Padding(padding: const EdgeInsets.all(16), child: Text(displayName.toUpperCase(), style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 14))),
+                Padding(padding: const EdgeInsets.all(16), child: Text(entry.key, style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 14))),
                 ...sortedMatches.map((m) => MatchCard(homeTeam: m.homeTeam, awayTeam: m.awayTeam, kickoff: m.kickoff, aiScore: m.aiScore, status: m.status, isValueBet: m.valueBet)),
               ]);
             }).toList(),
