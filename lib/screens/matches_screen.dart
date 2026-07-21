@@ -43,16 +43,31 @@ class _MatchesScreenState extends State<MatchesScreen> {
 
   Future<void> _loadData({bool force = false}) async {
     setState(() => _loading = true);
+    // Kényszerítjük a frissítést, ha a felhasználó lehúzza a képernyőt, 
+    // így a legújabb dinamikus napok töltődnek be!
     final matches = await _service.loadMatches(forceRefresh: force);
     final hidden = await _service.getHiddenLeagues();
     if (!mounted) return;
     
     final dates = matches.map((m) => DateFormat('yyyy-MM-dd').format(m.kickoff.toLocal())).toSet().toList()..sort();
     
+    // Automatikusan kiválasztjuk a mára eső dátumot, ha létezik a listában, különben az első elérhetőt
+    final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    String? initialDate;
+    if (dates.contains(todayStr)) {
+      initialDate = todayStr;
+    } else if (dates.isNotEmpty) {
+      initialDate = dates.first;
+    }
+
     setState(() {
       _matches = matches;
       _hiddenLeagues = hidden;
-      _selectedDate = dates.isNotEmpty ? dates.first : null;
+      _selectedDate = _selectedDate ?? initialDate;
+      // Ha a kiválasztott dátum már nincs benne az új adatokban, állítsuk át az elsőre
+      if (_selectedDate == null || !dates.contains(_selectedDate)) {
+        _selectedDate = initialDate;
+      }
       _loading = false;
     });
   }
@@ -84,7 +99,6 @@ class _MatchesScreenState extends State<MatchesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Csak a foci meccsek és a nem elrejtett ligák szűrése
     final footballMatches = _matches.where((m) => _isFootball(m.league) && !_hiddenLeagues.contains(m.league)).toList();
 
     final availableDates = footballMatches.map((m) => DateFormat('yyyy-MM-dd').format(m.kickoff.toLocal())).toSet().toList()..sort();
@@ -145,52 +159,59 @@ class _MatchesScreenState extends State<MatchesScreen> {
               _buildFilters(),
 
               Expanded(
-                child: grouped.isEmpty 
-                  ? const Center(child: Text("Nincs találat a megadott feltételekkel", style: TextStyle(color: Colors.white54)))
-                  : ListView(
-                      children: grouped.entries.map((entry) {
-                        final sortedMatches = entry.value..sort((a, b) => b.status.index.compareTo(a.status.index));
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start, 
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      entry.key, 
-                                      style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 14)
+                child: RefreshIndicator(
+                  onRefresh: () => _loadData(forceRefresh: true), // Húzásra újratölti és frissíti a dátumokat is!
+                  child: grouped.isEmpty 
+                    ? ListView(
+                        children: const [
+                          SizedBox(height: 100),
+                          Center(child: Text("Nincs találat a megadott feltételekkel", style: TextStyle(color: Colors.white54))),
+                        ],
+                      )
+                    : ListView(
+                        children: grouped.entries.map((entry) {
+                          final sortedMatches = entry.value..sort((a, b) => b.status.index.compareTo(a.status.index));
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start, 
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        entry.key, 
+                                        style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 14)
+                                      ),
                                     ),
-                                  ),
-                                  // ELREJTÉS GOMB A LIGA MELLETT
-                                  GestureDetector(
-                                    onTap: () => _hideLeague(entry.key),
-                                    child: const Row(
-                                      children: [
-                                        Icon(Icons.visibility_off_rounded, size: 16, color: Colors.grey),
-                                        SizedBox(width: 4),
-                                        Text("Elrejtés", style: TextStyle(color: Colors.grey, fontSize: 12)),
-                                      ],
+                                    GestureDetector(
+                                      onTap: () => _hideLeague(entry.key),
+                                      child: const Row(
+                                        children: [
+                                          Icon(Icons.visibility_off_rounded, size: 16, color: Colors.grey),
+                                          SizedBox(width: 4),
+                                          Text("Elrejtés", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                            ...sortedMatches.map((m) => MatchCard(
-                              homeTeam: m.homeTeam,
-                              awayTeam: m.awayTeam,
-                              kickoff: m.kickoff,
-                              aiScore: m.aiScore,
-                              status: m.status,
-                              isValueBet: m.valueBet,
-                              league: entry.key,
-                            )),
-                          ],
-                        );
-                      }).toList(),
-                    ),
+                              ...sortedMatches.map((m) => MatchCard(
+                                homeTeam: m.homeTeam,
+                                awayTeam: m.awayTeam,
+                                kickoff: m.kickoff,
+                                aiScore: m.aiScore,
+                                status: m.status,
+                                isValueBet: m.valueBet,
+                                league: entry.key,
+                              )),
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                ),
               ),
             ],
           ),
@@ -201,7 +222,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
         height: 60, 
         child: ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 16), 
-          scrollDirection: Axis.horizontal, 
+          scrollDirection: ScrollDirection.horizontal, 
           itemCount: dates.length,
           separatorBuilder: (_, __) => const SizedBox(width: 10),
           itemBuilder: (context, i) => GestureDetector(
