@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../models/match_model.dart';
-import '../../services/ai_engine_service.dart'; // <-- EZ HIÁNYZOTT
+import '../../services/ai_engine_service.dart';
 import '../../screens/match_detail_screen.dart';
 
 /// ===========================================
 /// ZSOLT AI PRO
-/// Version: v2.0.2
 /// File: ai_top_card.dart
 /// ===========================================
 
@@ -47,10 +46,10 @@ class AiTopCard extends StatelessWidget {
       );
     }
 
-    final aiEngine = AiEngineService();
     final m = match!;
-    final aiScore = aiEngine.calculateScore(m);
-    final isValue = aiEngine.isValueBet(m);
+    // STATIKUS HIVÁS
+    final aiScore = AiEngineService.calculateScore(m);
+    final isValue = AiEngineService.isValueBet(m);
 
     return Container(
       decoration: BoxDecoration(
