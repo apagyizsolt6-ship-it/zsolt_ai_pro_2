@@ -16,18 +16,18 @@ class MatchesScreen extends StatefulWidget {
 class _MatchesScreenState extends State<MatchesScreen> {
   final ActiveLeaguesService _service = ActiveLeaguesService();
   List<MatchModel> _matches = [];
+  List<String> _hiddenLeagues = [];
   bool _loading = true;
   String? _selectedDate;
   MatchFilter _selectedFilter = MatchFilter.all;
   
-  // Kereső vezérlő
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
   @override
   void initState() {
     super.initState();
-    _loadMatches();
+    _loadData();
     _searchController.addListener(() {
       setState(() {
         _searchQuery = _searchController.text.toLowerCase();
@@ -41,24 +41,32 @@ class _MatchesScreenState extends State<MatchesScreen> {
     super.dispose();
   }
 
-  Future<void> _loadMatches({bool force = false}) async {
+  Future<void> _loadData({bool force = false}) async {
     setState(() => _loading = true);
     final matches = await _service.loadMatches(forceRefresh: force);
+    final hidden = await _service.getHiddenLeagues();
     if (!mounted) return;
     
     final dates = matches.map((m) => DateFormat('yyyy-MM-dd').format(m.kickoff.toLocal())).toSet().toList()..sort();
     
     setState(() {
       _matches = matches;
+      _hiddenLeagues = hidden;
       _selectedDate = dates.isNotEmpty ? dates.first : null;
       _loading = false;
     });
   }
 
-  // --- 1. PROFI AUTOMATA MAGYARÍTÓ & FOCI SZŰRŐ RENDSZER ---
+  Future<void> _hideLeague(String leagueName) async {
+    await _service.hideLeague(leagueName);
+    final hidden = await _service.getHiddenLeagues();
+    setState(() {
+      _hiddenLeagues = hidden;
+    });
+  }
+
   bool _isFootball(String leagueName) {
     final lower = leagueName.toLowerCase();
-    // Kizáró szűrők: ha ezeket tartalmazza, nem foci
     if (lower.contains('wnba') || 
         lower.contains('basketball') || 
         lower.contains('baseball') || 
@@ -66,56 +74,21 @@ class _MatchesScreenState extends State<MatchesScreen> {
         lower.contains('tennis') || 
         lower.contains('hockey') || 
         lower.contains('esports') ||
+        lower.contains('cricket') ||
+        lower.contains('the hundred') ||
         lower.contains('nba')) {
       return false;
     }
     return true;
   }
 
-  String _formatLeagueName(String name) {
-    // Pontos szótári fordítások a leggyakoribb ligákra
-    final Map<String, String> dictionary = {
-      "Club Friendlies": "Barátságos klubmérkőzések",
-      "Argentinian Primera C": "Argentin Primera C",
-      "Copa Paulista": "Copa Paulista",
-      "Argentinian Primera B Nacional": "Argentin Primera B Nacional",
-      "Argentinian Torneo Promocional Amateur": "Argentin Torneo Promocional Amateur",
-      "Bulgarian First League": "Bolgár első osztály",
-      "Romanian Liga I": "Román Liga I",
-      "Lebanon Premier League": "Libanoni Premier League",
-      "Bolivian Primera División": "Bolíviai Primera División",
-      "Ecuadorian Serie A": "Ecuadori Serie A",
-      "Icelandic 1 Deild Karla": "Izlandi 1. Deild Karla",
-      "Icelandic Úrvalsdeild Karla": "Izlandi Úrvalsdeild Karla",
-      "Uruguayan Primera Division": "Uruguayi Primera Division",
-    };
-
-    if (dictionary.containsKey(name)) {
-      return dictionary[name]!.toUpperCase();
-    }
-
-    // Automata tisztítás és fordítás maradványokra
-    String clean = name
-        .replaceAll("Division", "Osztály")
-        .replaceAll("League", "Liga")
-        .replaceAll("Friendlies", "Barátságos mérkőzések")
-        .replaceAll("Premier", "Premier")
-        .replaceAll("National", "Nemzeti")
-        .replaceAll("Supercopa", "Szuperkupa")
-        .replaceAll("Cup", "Kupa")
-        .trim();
-        
-    return clean.toUpperCase();
-  }
-
   @override
   Widget build(BuildContext context) {
-    // Csak a foci meccsek szűrése a teljes listából
-    final footballMatches = _matches.where((m) => _isFootball(m.league)).toList();
+    // Csak a foci meccsek és a nem elrejtett ligák szűrése
+    final footballMatches = _matches.where((m) => _isFootball(m.league) && !_hiddenLeagues.contains(m.league)).toList();
 
     final availableDates = footballMatches.map((m) => DateFormat('yyyy-MM-dd').format(m.kickoff.toLocal())).toSet().toList()..sort();
     
-    // Szűrés dátum, státusz, fül (filter) és a keresőmező alapján
     final filtered = footballMatches.where((m) {
       final dateMatch = DateFormat('yyyy-MM-dd').format(m.kickoff.toLocal()) == _selectedDate;
       final isNotFinished = m.status != MatchStatus.finished;
@@ -125,7 +98,6 @@ class _MatchesScreenState extends State<MatchesScreen> {
       if (_selectedFilter == MatchFilter.valueBet) filterMatch = m.valueBet;
       if (_selectedFilter == MatchFilter.live) filterMatch = m.status == MatchStatus.live;
 
-      // Kereső szűrés (Csapatnevekre vagy bajnokságra)
       bool searchMatch = true;
       if (_searchQuery.isNotEmpty) {
         final home = m.homeTeam.toLowerCase();
@@ -139,8 +111,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
 
     final Map<String, List<MatchModel>> grouped = {};
     for (var m in filtered) {
-      final formattedName = _formatLeagueName(m.league);
-      grouped.putIfAbsent(formattedName, () => []).add(m);
+      grouped.putIfAbsent(m.league, () => []).add(m);
     }
 
     return Scaffold(
@@ -150,7 +121,6 @@ class _MatchesScreenState extends State<MatchesScreen> {
         ? const Center(child: CircularProgressIndicator()) 
         : Column(
             children: [
-              // 2. KERESŐMEZŐ
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: TextField(
@@ -171,13 +141,9 @@ class _MatchesScreenState extends State<MatchesScreen> {
                 ),
               ),
 
-              // Dátum sáv
               _buildDateSelector(availableDates),
-              
-              // Szűrők
               _buildFilters(),
 
-              // Meccsek listája
               Expanded(
                 child: grouped.isEmpty 
                   ? const Center(child: Text("Nincs találat a megadott feltételekkel", style: TextStyle(color: Colors.white54)))
@@ -188,10 +154,28 @@ class _MatchesScreenState extends State<MatchesScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start, 
                           children: [
                             Padding(
-                              padding: const EdgeInsets.all(16), 
-                              child: Text(
-                                entry.key, 
-                                style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 14)
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      entry.key, 
+                                      style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 14)
+                                    ),
+                                  ),
+                                  // ELREJTÉS GOMB A LIGA MELLETT
+                                  GestureDetector(
+                                    onTap: () => _hideLeague(entry.key),
+                                    child: const Row(
+                                      children: [
+                                        Icon(Icons.visibility_off_rounded, size: 16, color: Colors.grey),
+                                        SizedBox(width: 4),
+                                        Text("Elrejtés", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             ...sortedMatches.map((m) => MatchCard(
