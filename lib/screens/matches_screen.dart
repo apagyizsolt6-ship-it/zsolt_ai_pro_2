@@ -43,7 +43,6 @@ class _MatchesScreenState extends State<MatchesScreen> {
 
   Future<void> _loadData() async {
     setState(() => _loading = true);
-    // Itt nincs kényszerítéses paraméter, így simán meghívódik a cache/dinamikus betöltés
     final matches = await _service.loadMatches();
     final hidden = await _service.getHiddenLeagues();
     if (!mounted) return;
@@ -102,6 +101,10 @@ class _MatchesScreenState extends State<MatchesScreen> {
     
     final filtered = footballMatches.where((m) {
       final dateMatch = DateFormat('yyyy-MM-dd').format(m.kickoff.toLocal()) == _selectedDate;
+      
+      // Ha az "Élő" fül van kiválasztva, függetlenítjük a dátumtól, hogy minden élő meccs látszódjon
+      bool dateCheck = (_selectedFilter == MatchFilter.live) ? true : dateMatch;
+      
       final isNotFinished = m.status != MatchStatus.finished;
       
       bool filterMatch = true;
@@ -117,7 +120,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
         searchMatch = home.contains(_searchQuery) || away.contains(_searchQuery) || league.contains(_searchQuery);
       }
 
-      return dateMatch && isNotFinished && filterMatch && searchMatch;
+      return dateCheck && isNotFinished && filterMatch && searchMatch;
     }).toList();
 
     final Map<String, List<MatchModel>> grouped = {};
@@ -157,12 +160,19 @@ class _MatchesScreenState extends State<MatchesScreen> {
 
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () => _loadData(), // JAVÍTVA: paraméter nélkül hívódik
+                  onRefresh: () => _loadData(),
                   child: grouped.isEmpty 
                     ? ListView(
-                        children: const [
-                          SizedBox(height: 100),
-                          Center(child: Text("Nincs találat a megadott feltételekkel", style: TextStyle(color: Colors.white54))),
+                        children: [
+                          const SizedBox(height: 120),
+                          Center(
+                            child: Text(
+                              _selectedFilter == MatchFilter.live 
+                                ? "Jelenleg nincsenek élő mérkőzések." 
+                                : "Nincs találat a megadott feltételekkel", 
+                              style: const TextStyle(color: Colors.white54, fontSize: 16)
+                            ),
+                          ),
                         ],
                       )
                     : ListView(
@@ -219,7 +229,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
         height: 60, 
         child: ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 16), 
-          scrollDirection: Axis.horizontal, // JAVÍTVA: Helyes Axis irány
+          scrollDirection: Axis.horizontal, 
           itemCount: dates.length,
           separatorBuilder: (_, __) => const SizedBox(width: 10),
           itemBuilder: (context, i) => GestureDetector(
