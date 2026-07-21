@@ -1,3 +1,10 @@
+/*
+===========================================
+ZSOLT AI PRO - VÉGLEGES MECCSKÁRTYA (MINIMALISTA)
+File: lib/widgets/matches/match_card.dart
+===========================================
+*/
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/match_model.dart';
@@ -10,7 +17,7 @@ class MatchCard extends StatelessWidget {
   final int aiScore;
   final bool isValueBet;
   final MatchStatus status;
-  final String league; // Szükséges a részletes oldalhoz
+  final String league;
 
   const MatchCard({
     super.key,
@@ -34,7 +41,6 @@ class MatchCard extends StatelessWidget {
       ),
       child: InkWell(
         onTap: () {
-          // Kattintásra megnyitjuk a részletes oldalt
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => MatchDetailScreen(
