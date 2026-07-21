@@ -1,7 +1,7 @@
 /*
 ===========================================
 ZSOLT AI PRO
-Version: v2.0.0 (Felturbózott AI Motor)
+Version: v2.0.1 (Javított AI Motor)
 File: ai_engine_service.dart
 ===========================================
 */
@@ -18,10 +18,10 @@ class AiEngineService {
     if (match.aiScore > 0) return match.aiScore;
     
     // Intelligens determinisztikus generálás a csapatnevek alapján (78% - 97%)
-    final seed = match.homeTeam.codeUnits.fold(0, (a, b) => a + b) +
-                 match.awayTeam.codeUnits.fold(0, (a, b) => a + b) +
-                 match.league.codeUnits.fold(0, (a, b) => a + b);
-    final random = Random(seed);
+    final seedSum = match.homeTeam.codeUnits.fold(0, (a, b) => a + b) +
+                    match.awayTeam.codeUnits.fold(0, (a, b) => a + b) +
+                    match.league.codeUnits.fold(0, (a, b) => a + b);
+    final random = Random(seedSum.toInt());
     return 78 + random.nextInt(20);
   }
 
@@ -110,7 +110,7 @@ class AiEngineService {
     }
 
     if (match.drawOdd != null && match.drawOdd! >= 3.50) {
-      reasons.add("Magas döntetlen szorzó extra értéccsel.");
+      reasons.add("Magas döntetlen szorzó extra értékkel.");
     }
 
     if (match.hasOdds) {
