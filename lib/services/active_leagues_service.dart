@@ -1,6 +1,6 @@
 /*
 ===========================================
-ZSOLT AI PRO - ACTIVE LEAGUES SERVICE (DINAMIKUS DÁTUMOKkal)
+ZSOLT AI PRO - ACTIVE LEAGUES SERVICE (FORCE REFRESH & DINAMIKUS DÁTUMOK)
 File: lib/services/active_leagues_service.dart
 ===========================================
 */
@@ -69,7 +69,7 @@ class ActiveLeaguesService {
     String clean = name
         .replaceAll("Division", "Osztály")
         .replaceAll("League", "Liga")
-        .replaceAll("Friendlies", "Barátságos klubmérkőzések")
+        .replaceAll("Friendlies", "Barátságos mérkőzések")
         .replaceAll("Premier", "Premier")
         .replaceAll("National", "Nemzeti")
         .replaceAll("Supercopa", "Szuperkupa")
@@ -79,8 +79,10 @@ class ActiveLeaguesService {
     return clean.toUpperCase();
   }
 
-  Future<List<MatchModel>> loadMatches({bool forceRefresh = false}) async {
+  Future<List<MatchModel>> loadMatches({bool forceRefresh = true}) async {
     final file = await _localFile;
+    
+    // Alapértelmezésben mostantól töröljük a régit, hogy mindig a friss adatok jöjjenek le!
     if (!forceRefresh && await file.exists()) {
       try {
         final contents = await file.readAsString();
@@ -89,17 +91,16 @@ class ActiveLeaguesService {
       } catch (e) { log("Cache hiba: $e"); }
     }
 
-    log("Dinamikus dátum alapú adatgyűjtés indul...");
+    log("Friss, dinamikus dátum alapú adatgyűjtés indul...");
     
-    // DINAMIKUS GENERÁLÁS: A mai nap, holnap és holnapután (vagy akár 3 napra előre/hátra)
+    // PONTOS MAI ÉS KÖVETKEZŐ NAPOK GENERÁLÁSA (Ma, Holnap, Holnapután)
     final now = DateTime.now();
     final dates = List.generate(3, (index) {
-      final targetDate = now.add(Duration(days: index - 1)); // Tegnap, Ma, Holnap (vagy állítsd át 0-tól, ha csak ma + 2 nap kell)
+      final targetDate = now.add(Duration(days: index)); // 0 = Ma, 1 = Holnap, 2 = Holnapután
       return DateFormat('yyyy-MM-dd').format(targetDate);
     });
 
-    // Ha inkább a mától számított 3 napot szeretnéd (Ma, Holnap, Holnapután), használd ezt:
-    // final dates = List.generate(3, (index) => DateFormat('yyyy-MM-dd').format(now.add(Duration(days: index))));
+    log("Lekért dátumok: $dates");
 
     final results = await Future.wait(dates.map((d) => _api.getMatchesByDate(d)));
 
