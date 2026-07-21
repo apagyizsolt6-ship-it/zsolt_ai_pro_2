@@ -12,7 +12,8 @@ import '../models/match_model.dart';
 class AiEngineService {
   const AiEngineService();
 
-  int calculateScore(MatchModel match) {
+  // STATIKUS metódusok, hogy a kártyákból közvetlenül hívhatók legyenek
+  static int calculateScore(MatchModel match) {
     if (match.aiScore > 0) return match.aiScore;
 
     final seedSum = match.homeTeam.codeUnits.fold(0, (a, b) => a + b) +
@@ -30,7 +31,7 @@ class AiEngineService {
     return baseScore.clamp(75, 98);
   }
 
-  bool isValueBet(MatchModel match) {
+  static bool isValueBet(MatchModel match) {
     int score = calculateScore(match);
     if (match.valueBet) return true;
     
@@ -45,7 +46,7 @@ class AiEngineService {
     return seed % 4 == 0 || score >= 92;
   }
 
-  AiAnalysisResult analyzeMatch(MatchModel match) {
+  static AiAnalysisResult analyzeMatch(MatchModel match) {
     int score = calculateScore(match);
     bool valueBet = isValueBet(match);
 
@@ -85,7 +86,7 @@ class AiEngineService {
     );
   }
 
-  String recommendation(MatchModel match) => analyzeMatch(match).recommendation;
-  int confidence(MatchModel match) => analyzeMatch(match).confidence;
-  List<String> reasons(MatchModel match) => analyzeMatch(match).reasons;
+  static String recommendation(MatchModel match) => analyzeMatch(match).recommendation;
+  static int confidence(MatchModel match) => analyzeMatch(match).confidence;
+  static List<String> reasons(MatchModel match) => analyzeMatch(match).reasons;
 }
