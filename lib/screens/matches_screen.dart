@@ -41,17 +41,15 @@ class _MatchesScreenState extends State<MatchesScreen> {
     super.dispose();
   }
 
-  Future<void> _loadData({bool force = false}) async {
+  Future<void> _loadData() async {
     setState(() => _loading = true);
-    // Kényszerítjük a frissítést, ha a felhasználó lehúzza a képernyőt, 
-    // így a legújabb dinamikus napok töltődnek be!
-    final matches = await _service.loadMatches(forceRefresh: force);
+    // Itt nincs kényszerítéses paraméter, így simán meghívódik a cache/dinamikus betöltés
+    final matches = await _service.loadMatches();
     final hidden = await _service.getHiddenLeagues();
     if (!mounted) return;
     
     final dates = matches.map((m) => DateFormat('yyyy-MM-dd').format(m.kickoff.toLocal())).toSet().toList()..sort();
     
-    // Automatikusan kiválasztjuk a mára eső dátumot, ha létezik a listában, különben az első elérhetőt
     final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
     String? initialDate;
     if (dates.contains(todayStr)) {
@@ -64,7 +62,6 @@ class _MatchesScreenState extends State<MatchesScreen> {
       _matches = matches;
       _hiddenLeagues = hidden;
       _selectedDate = _selectedDate ?? initialDate;
-      // Ha a kiválasztott dátum már nincs benne az új adatokban, állítsuk át az elsőre
       if (_selectedDate == null || !dates.contains(_selectedDate)) {
         _selectedDate = initialDate;
       }
@@ -160,7 +157,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
 
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () => _loadData(forceRefresh: true), // Húzásra újratölti és frissíti a dátumokat is!
+                  onRefresh: () => _loadData(), // JAVÍTVA: paraméter nélkül hívódik
                   child: grouped.isEmpty 
                     ? ListView(
                         children: const [
@@ -222,7 +219,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
         height: 60, 
         child: ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 16), 
-          scrollDirection: ScrollDirection.horizontal, 
+          scrollDirection: Axis.horizontal, // JAVÍTVA: Helyes Axis irány
           itemCount: dates.length,
           separatorBuilder: (_, __) => const SizedBox(width: 10),
           itemBuilder: (context, i) => GestureDetector(
