@@ -16,7 +16,7 @@ class MatchMapper {
       
       DateTime kickoff;
       try {
-        kickoff = DateTime.parse('$date $time').toLocal();
+        kickoff = DateTime.parse('$date $time');
       } catch (e) {
         log("Dátum formázási hiba: $e");
         kickoff = DateTime.now();
