@@ -1,9 +1,10 @@
 /*
 ===========================================
-ZSOLT AI PRO - MATCH MAPPER (TELJES, EREDETI + DÁTUM BŐVÍTÉS)
+ZSOLT AI PRO - MATCH MAPPER (DEBUG VERSION)
 File: lib/services/match_mapper.dart
 ===========================================
 */
+
 import 'dart:developer';
 import '../models/match_model.dart';
 
@@ -13,10 +14,24 @@ class MatchMapper {
     return events.map((json) {
       final date = json['dateEvent']?.toString() ?? '';
       final time = json['strTime']?.toString() ?? '00:00:00';
-      
+
+      log('=================================================');
+      log('EVENT: ${json['strHomeTeam']} - ${json['strAwayTeam']}');
+      log('idEvent      : ${json['idEvent']}');
+      log('dateEvent    : ${json['dateEvent']}');
+      log('strTime      : ${json['strTime']}');
+      log('strTimestamp : ${json['strTimestamp']}');
+      log('strStatus    : ${json['strStatus']}');
+      log('=================================================');
+
       DateTime kickoff;
+
       try {
         kickoff = DateTime.parse('$date $time');
+
+        log('Parsed kickoff : $kickoff');
+        log('Local kickoff  : ${kickoff.toLocal()}');
+        log('UTC kickoff    : ${kickoff.toUtc()}');
       } catch (e) {
         log("Dátum formázási hiba: $e");
         kickoff = DateTime.now();
@@ -35,11 +50,17 @@ class MatchMapper {
     }).toList();
   }
 
-  // A metódus neve _parseStatus
   static MatchStatus _parseStatus(String? statusText) {
     final s = (statusText ?? '').toLowerCase();
-    if (s.contains('live') || s == 'tt') return MatchStatus.live;
-    if (s.contains('finished') || s == 'ft') return MatchStatus.finished;
+
+    if (s.contains('live') || s == 'tt') {
+      return MatchStatus.live;
+    }
+
+    if (s.contains('finished') || s == 'ft') {
+      return MatchStatus.finished;
+    }
+
     return MatchStatus.upcoming;
   }
 }
