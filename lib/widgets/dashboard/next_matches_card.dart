@@ -5,8 +5,8 @@ import '../../screens/match_detail_screen.dart';
 
 /// ===========================================
 /// ZSOLT AI PRO
-/// Version: v2.0.0
-/// File: next_matches_card.dart (Aktív AI Motor integrációval)
+/// Version: v2.0.3
+/// File: next_matches_card.dart
 /// ===========================================
 
 class NextMatchesCard extends StatelessWidget {
@@ -37,7 +37,8 @@ class NextMatchesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const aiEngine = AiEngineService();
+    // JAVÍTVA: const helyett final
+    final aiEngine = AiEngineService();
     final displayMatches = matches.take(3).toList();
 
     return Card(
