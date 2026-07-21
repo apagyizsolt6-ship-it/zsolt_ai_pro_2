@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
-
+import '../../models/match_model.dart';
 import '../../screens/match_detail_screen.dart';
 
 /// ===========================================
 /// ZSOLT AI PRO
-/// Version: v1.2.0
-/// File: ai_top_card.dart
+/// Version: v1.3.0
+/// File: ai_top_card.dart (Valós adatokkal)
 /// ===========================================
 
 class AiTopCard extends StatelessWidget {
-  const AiTopCard({super.key});
+  final MatchModel? match;
+  const AiTopCard({super.key, this.match});
 
-  void _openMatch(BuildContext context) {
+  void _openMatch(BuildContext context, MatchModel m) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => const MatchDetailScreen(
-          league: 'Premier League',
-          homeTeam: 'Liverpool',
-          awayTeam: 'Arsenal',
-          kickoff: '20:45',
-          aiScore: 94,
-          isValueBet: true,
+        builder: (_) => MatchDetailScreen(
+          league: m.league,
+          homeTeam: m.homeTeam,
+          awayTeam: m.awayTeam,
+          kickoff: '${m.kickoff.toLocal().hour.toString().padLeft(2, '0')}:${m.kickoff.toLocal().minute.toString().padLeft(2, '0')}',
+          aiScore: m.aiScore,
+          isValueBet: m.valueBet,
         ),
       ),
     );
@@ -29,6 +30,19 @@ class AiTopCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (match == null) {
+      return Card(
+        elevation: 10,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: const Padding(
+          padding: EdgeInsets.all(20),
+          child: Center(child: Text("Nincs elérhető AI TOP ajánlat", style: TextStyle(color: Colors.white54))),
+        ),
+      );
+    }
+
+    final m = match!;
+
     return Card(
       elevation: 10,
       shape: RoundedRectangleBorder(
@@ -36,7 +50,7 @@ class AiTopCard extends StatelessWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(24),
-        onTap: () => _openMatch(context),
+        onTap: () => _openMatch(context, m),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -82,36 +96,39 @@ class AiTopCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text(
-                      'VALUE BET',
-                      style: TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold,
+                  if (m.valueBet) ...[
+                    const SizedBox(width: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text(
+                        'VALUE BET',
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
 
               const SizedBox(height: 24),
 
-              const Center(
+              Center(
                 child: Text(
-                  'Liverpool',
-                  style: TextStyle(
+                  m.homeTeam,
+                  style: const TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
                   ),
+                  textAlign: TextAlign.center,
                 ),
               ),
 
@@ -128,13 +145,14 @@ class AiTopCard extends StatelessWidget {
                 ),
               ),
 
-              const Center(
+              Center(
                 child: Text(
-                  'Arsenal',
-                  style: TextStyle(
+                  m.awayTeam,
+                  style: const TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
                   ),
+                  textAlign: TextAlign.center,
                 ),
               ),
 
@@ -152,18 +170,18 @@ class AiTopCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Column(
-                            children: const [
-                              Text(
+                            children: [
+                              const Text(
                                 'AI SCORE',
                                 style: TextStyle(
                                   color: Colors.grey,
                                   fontSize: 12,
                                 ),
                               ),
-                              SizedBox(height: 6),
+                              const SizedBox(height: 6),
                               Text(
-                                '94%',
-                                style: TextStyle(
+                                '${m.aiScore}%',
+                                style: const TextStyle(
                                   fontSize: 26,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFF7B3FFF),
@@ -171,20 +189,21 @@ class AiTopCard extends StatelessWidget {
                               ),
                             ],
                           ),
-                        ),                        Expanded(
+                        ),
+                        Expanded(
                           child: Column(
-                            children: const [
-                              Text(
+                            children: [
+                              const Text(
                                 'CONFIDENCE',
                                 style: TextStyle(
                                   color: Colors.grey,
                                   fontSize: 12,
                                 ),
                               ),
-                              SizedBox(height: 6),
+                              const SizedBox(height: 6),
                               Text(
-                                'HIGH',
-                                style: TextStyle(
+                                m.aiScore >= 90 ? 'HIGH' : 'MEDIUM',
+                                style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.green,
@@ -200,8 +219,8 @@ class AiTopCard extends StatelessWidget {
 
                     ClipRRect(
                       borderRadius: BorderRadius.circular(20),
-                      child: const LinearProgressIndicator(
-                        value: 0.94,
+                      child: LinearProgressIndicator(
+                        value: m.aiScore / 100.0,
                         minHeight: 10,
                       ),
                     ),
@@ -230,7 +249,7 @@ class AiTopCard extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
-                  onPressed: () => _openMatch(context),
+                  onPressed: () => _openMatch(context, m),
                   icon: const Icon(Icons.analytics_outlined),
                   label: const Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
