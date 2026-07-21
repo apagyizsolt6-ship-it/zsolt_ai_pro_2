@@ -97,7 +97,7 @@ class NextMatchesCard extends StatelessWidget {
                     children: displayMatches.map((m) {
                        final aiScore = AiEngineService.calculateScore(m);
                        final isValue = AiEngineService.isValueBet(m);
-                       timeStr = '${m.kickoff.toLocal().hour.toString().padLeft(2, '0')}:${m.kickoff.toLocal().minute.toString().padLeft(2, '0')}';
+                       final timeStr = '${m.kickoff.toLocal().hour.toString().padLeft(2, '0')}:${m.kickoff.toLocal().minute.toString().padLeft(2, '0')}';
 
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
