@@ -1,16 +1,44 @@
 import 'package:flutter/material.dart';
+import '../../models/match_model.dart';
+import '../../screens/match_detail_screen.dart';
 
 /// ===========================================
 /// ZSOLT AI PRO
-/// Version: v1.1.0
-/// File: next_matches_card.dart
+/// Version: v1.3.0
+/// File: next_matches_card.dart (Valós adatokkal)
 /// ===========================================
 
 class NextMatchesCard extends StatelessWidget {
-  const NextMatchesCard({super.key});
+  final List<MatchModel> matches;
+  final VoidCallback? onViewAllPressed;
+
+  const NextMatchesCard({
+    super.key,
+    required this.matches,
+    this.onViewAllPressed,
+  });
+
+  void _openMatch(BuildContext context, MatchModel m) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MatchDetailScreen(
+          league: m.league,
+          homeTeam: m.homeTeam,
+          awayTeam: m.awayTeam,
+          kickoff: '${m.kickoff.toLocal().hour.toString().padLeft(2, '0')}:${m.kickoff.toLocal().minute.toString().padLeft(2, '0')}',
+          aiScore: m.aiScore,
+          isValueBet: m.valueBet,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Legfeljebb 3 következő meccs megjelenítése
+    final displayMatches = matches.take(3).toList();
+
     return Card(
       elevation: 10,
       shape: RoundedRectangleBorder(
@@ -42,32 +70,41 @@ class NextMatchesCard extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            _matchTile(
-              league: 'Premier League',
-              home: 'Manchester City',
-              away: 'Real Madrid',
-              time: '20:45',
-              aiScore: 94,
-              valueBet: true,
-            ),
+            displayMatches.isEmpty
+                ? const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    child: Center(
+                      child: Text(
+                        'Nincsenek elérhető mérkőzések',
+                        style: TextStyle(color: Colors.white54),
+                      ),
+                    ),
+                  )
+                : Column(
+                    children: displayMatches.map((m) {
+                      final timeStr = '${m.kickoff.toLocal().hour.toString().padLeft(2, '0')}:${m.kickoff.toLocal().minute.toString().padLeft(2, '0')}';
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: _matchTile(
+                          context,
+                          match: m,
+                          league: m.league,
+                          home: m.homeTeam,
+                          away: m.awayTeam,
+                          time: timeStr,
+                          aiScore: m.aiScore,
+                          valueBet: m.valueBet,
+                        ),
+                      );
+                    }).toList(),
+                  ),
 
-            const SizedBox(height: 14),
-
-            _matchTile(
-              league: 'Bajnokok Ligája',
-              home: 'Barcelona',
-              away: 'Liverpool',
-              time: '21:00',
-              aiScore: 91,
-              valueBet: false,
-            ),
-
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
 
             Align(
               alignment: Alignment.centerRight,
               child: FilledButton.icon(
-                onPressed: () {},
+                onPressed: onViewAllPressed,
                 icon: const Icon(Icons.arrow_forward),
                 label: const Text('Összes meccs'),
               ),
@@ -78,7 +115,9 @@ class NextMatchesCard extends StatelessWidget {
     );
   }
 
-  Widget _matchTile({
+  Widget _matchTile(
+    BuildContext context, {
+    required MatchModel match,
     required String league,
     required String home,
     required String away,
@@ -88,7 +127,7 @@ class NextMatchesCard extends StatelessWidget {
   }) {
     return InkWell(
       borderRadius: BorderRadius.circular(18),
-      onTap: () {},
+      onTap: () => _openMatch(context, match),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
@@ -122,6 +161,8 @@ class NextMatchesCard extends StatelessWidget {
                       color: Colors.grey,
                       fontSize: 12,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
 
                   const SizedBox(height: 4),
@@ -132,12 +173,15 @@ class NextMatchesCard extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
 
                   const SizedBox(height: 8),
 
                   Row(
-                    children: [                      Container(
+                    children: [
+                      Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
                           vertical: 4,
