@@ -5,8 +5,8 @@ import '../../screens/match_detail_screen.dart';
 
 /// ===========================================
 /// ZSOLT AI PRO
-/// Version: v2.0.0
-/// File: ai_top_card.dart (Aktív AI Motor integrációval)
+/// Version: v2.0.1
+/// File: ai_top_card.dart (Javított példányosítás)
 /// ===========================================
 
 class AiTopCard extends StatelessWidget {
@@ -47,7 +47,8 @@ class AiTopCard extends StatelessWidget {
       );
     }
 
-    const aiEngine = AiEngineService();
+    // JAVÍTVA: const helyett final
+    final aiEngine = AiEngineService();
     final m = match!;
     final aiScore = aiEngine.calculateScore(m);
     final isValue = aiEngine.isValueBet(m);
