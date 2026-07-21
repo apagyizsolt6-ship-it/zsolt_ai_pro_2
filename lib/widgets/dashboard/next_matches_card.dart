@@ -38,7 +38,7 @@ class NextMatchesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // JAVÍTVA: const helyett final
-    final aiEngine = AiEngineService();
+    
     final displayMatches = matches.take(3).toList();
 
     return Card(
@@ -95,9 +95,9 @@ class NextMatchesCard extends StatelessWidget {
                   )
                 : Column(
                     children: displayMatches.map((m) {
-                      final aiScore = aiEngine.calculateScore(m);
-                      final isValue = aiEngine.isValueBet(m);
-                      final timeStr = '${m.kickoff.toLocal().hour.toString().padLeft(2, '0')}:${m.kickoff.toLocal().minute.toString().padLeft(2, '0')}';
+                       final aiScore = AiEngineService.calculateScore(m);
+                       final isValue = AiEngineService.isValueBet(m);
+                       timeStr = '${m.kickoff.toLocal().hour.toString().padLeft(2, '0')}:${m.kickoff.toLocal().minute.toString().padLeft(2, '0')}';
 
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
