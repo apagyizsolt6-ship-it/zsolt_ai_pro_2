@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../models/match_model.dart';
+import '../../services/ai_engine_service.dart';
 import '../../screens/match_detail_screen.dart';
 
 /// ===========================================
 /// ZSOLT AI PRO
-/// Version: v1.3.0
-/// File: next_matches_card.dart (Valós adatokkal)
+/// Version: v2.0.0
+/// File: next_matches_card.dart (Aktív AI Motor integrációval)
 /// ===========================================
 
 class NextMatchesCard extends StatelessWidget {
@@ -18,7 +19,7 @@ class NextMatchesCard extends StatelessWidget {
     this.onViewAllPressed,
   });
 
-  void _openMatch(BuildContext context, MatchModel m) {
+  void _openMatch(BuildContext context, MatchModel m, int score, bool valueBet) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -27,8 +28,8 @@ class NextMatchesCard extends StatelessWidget {
           homeTeam: m.homeTeam,
           awayTeam: m.awayTeam,
           kickoff: '${m.kickoff.toLocal().hour.toString().padLeft(2, '0')}:${m.kickoff.toLocal().minute.toString().padLeft(2, '0')}',
-          aiScore: m.aiScore,
-          isValueBet: m.valueBet,
+          aiScore: score,
+          isValueBet: valueBet,
         ),
       ),
     );
@@ -36,39 +37,50 @@ class NextMatchesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Legfeljebb 3 következő meccs megjelenítése
+    const aiEngine = AiEngineService();
     final displayMatches = matches.take(3).toList();
 
     return Card(
-      elevation: 10,
+      elevation: 8,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
       ),
+      color: const Color(0xFF161B22),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(
-                  Icons.sports_soccer_rounded,
-                  color: Color(0xFF1565FF),
-                  size: 28,
+                const Row(
+                  children: [
+                    Icon(
+                      Icons.sports_soccer_rounded,
+                      color: Color(0xFF3B82F6),
+                      size: 24,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'KÖVETKEZŐ MÉRKŐZÉSEK',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.6,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(width: 10),
                 Text(
-                  'KÖVETKEZŐ MÉRKŐZÉSEK',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.6,
-                  ),
+                  '${matches.length} meccs',
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ],
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
             displayMatches.isEmpty
                 ? const Padding(
@@ -82,31 +94,41 @@ class NextMatchesCard extends StatelessWidget {
                   )
                 : Column(
                     children: displayMatches.map((m) {
+                      final aiScore = aiEngine.calculateScore(m);
+                      final isValue = aiEngine.isValueBet(m);
                       final timeStr = '${m.kickoff.toLocal().hour.toString().padLeft(2, '0')}:${m.kickoff.toLocal().minute.toString().padLeft(2, '0')}';
+
                       return Padding(
-                        padding: const EdgeInsets.only(bottom: 14),
+                        padding: const EdgeInsets.only(bottom: 12),
                         child: _matchTile(
                           context,
                           match: m,
+                          score: aiScore,
+                          valueBet: isValue,
                           league: m.league,
                           home: m.homeTeam,
                           away: m.awayTeam,
                           time: timeStr,
-                          aiScore: m.aiScore,
-                          valueBet: m.valueBet,
+                          aiScore: aiScore,
                         ),
                       );
                     }).toList(),
                   ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
 
             Align(
               alignment: Alignment.centerRight,
-              child: FilledButton.icon(
+              child: TextButton.icon(
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF3B82F6),
+                ),
                 onPressed: onViewAllPressed,
-                icon: const Icon(Icons.arrow_forward),
-                label: const Text('Összes meccs'),
+                icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                label: const Text(
+                  'Összes meccs',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],
@@ -118,38 +140,41 @@ class NextMatchesCard extends StatelessWidget {
   Widget _matchTile(
     BuildContext context, {
     required MatchModel match,
+    required int score,
+    required bool valueBet,
     required String league,
     required String home,
     required String away,
     required String time,
     required int aiScore,
-    required bool valueBet,
   }) {
     return InkWell(
-      borderRadius: BorderRadius.circular(18),
-      onTap: () => _openMatch(context, match),
+      borderRadius: BorderRadius.circular(16),
+      onTap: () => _openMatch(context, match, score, valueBet),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          color: Colors.grey.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(16),
+          color: Colors.white.withValues(alpha: 0.03),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
         child: Row(
           children: [
             Container(
-              width: 56,
-              height: 56,
+              width: 46,
+              height: 46,
               decoration: BoxDecoration(
-                color: const Color(0xFF1565FF).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(16),
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
                 Icons.sports_soccer,
-                color: Color(0xFF1565FF),
+                color: Color(0xFF3B82F6),
+                size: 22,
               ),
             ),
 
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
 
             Expanded(
               child: Column(
@@ -159,64 +184,66 @@ class NextMatchesCard extends StatelessWidget {
                     league,
                     style: const TextStyle(
                       color: Colors.grey,
-                      fontSize: 12,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
 
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
 
                   Text(
                     '$home vs $away',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                      fontSize: 14,
+                      color: Colors.white,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
 
                   Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
+                          horizontal: 7,
+                          vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1565FF).withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(10),
+                          color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          'AI $aiScore',
+                          'AI $aiScore%',
                           style: const TextStyle(
-                            color: Color(0xFF1565FF),
+                            color: Color(0xFF60A5FA),
                             fontWeight: FontWeight.bold,
-                            fontSize: 11,
+                            fontSize: 10,
                           ),
                         ),
                       ),
 
                       if (valueBet) ...[
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                            horizontal: 7,
+                            vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.green.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(10),
+                            color: Colors.green.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Text(
                             'VALUE',
                             style: TextStyle(
-                              color: Colors.green,
+                              color: Colors.greenAccent,
                               fontWeight: FontWeight.bold,
-                              fontSize: 11,
+                              fontSize: 10,
                             ),
                           ),
                         ),
@@ -227,22 +254,23 @@ class NextMatchesCard extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(width: 12),
+            const SizedBox(width: 8),
 
             Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 10,
+                horizontal: 10,
+                vertical: 8,
               ),
               decoration: BoxDecoration(
-                color: const Color(0xFF1565FF).withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 time,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1565FF),
+                  color: Color(0xFF60A5FA),
+                  fontSize: 12,
                 ),
               ),
             ),
