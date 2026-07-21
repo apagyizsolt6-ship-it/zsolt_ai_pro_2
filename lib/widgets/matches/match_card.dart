@@ -47,7 +47,7 @@ class MatchCard extends StatelessWidget {
                 league: league,
                 homeTeam: homeTeam,
                 awayTeam: awayTeam,
-                kickoff: kickoff.toString(),
+                kickoff: kickoff,
                 aiScore: aiScore,
                 isValueBet: isValueBet,
               ),
