@@ -1,7 +1,6 @@
 /*
 ===========================================
 ZSOLT AI PRO
-Version: v3.1.0 (Statikus AI Motor)
 File: ai_engine_service.dart
 ===========================================
 */
@@ -13,7 +12,7 @@ import '../models/match_model.dart';
 class AiEngineService {
   const AiEngineService();
 
-  static int calculateScore(MatchModel match) {
+  int calculateScore(MatchModel match) {
     if (match.aiScore > 0) return match.aiScore;
 
     final seedSum = match.homeTeam.codeUnits.fold(0, (a, b) => a + b) +
@@ -31,7 +30,7 @@ class AiEngineService {
     return baseScore.clamp(75, 98);
   }
 
-  static bool isValueBet(MatchModel match) {
+  bool isValueBet(MatchModel match) {
     int score = calculateScore(match);
     if (match.valueBet) return true;
     
@@ -46,7 +45,7 @@ class AiEngineService {
     return seed % 4 == 0 || score >= 92;
   }
 
-  static AiAnalysisResult analyzeMatch(MatchModel match) {
+  AiAnalysisResult analyzeMatch(MatchModel match) {
     int score = calculateScore(match);
     bool valueBet = isValueBet(match);
 
@@ -55,43 +54,27 @@ class AiEngineService {
 
     if (score >= 92) {
       confidence += 30;
-      reasons.add("Kiemelkedő xG (várható gól) mutatók és hazai dominancia.");
-      reasons.add("A legutóbbi 5 mérkőzés statisztikai trendje 90% feletti egyezést mutat.");
+      reasons.add("Kiemelkedő xG mutatók és hazai dominancia.");
     } else if (score >= 85) {
       confidence += 20;
-      reasons.add("Stabil támadójáték és szilárd védekezési mutatók.");
-      reasons.add("H2H (egymás elleni) statisztika alapján a hazai csapat esélyesebb.");
+      reasons.add("Stabil támadójáték és szilárd védekezés.");
     } else {
       confidence += 10;
-      reasons.add("Kiegyenlített erőviszonyok, óvatosabb taktikai csata várható.");
+      reasons.add("Kiegyenlített erőviszonyok.");
     }
 
     if (valueBet) {
       confidence += 10;
-      reasons.add("Piaci alulárazottság detektálva: Magas értékű Value Bet opció.");
-    }
-
-    if (match.homeOdd != null) {
-      reasons.add("Elemzett 1X2 oddsok: ${match.homeOdd} / ${match.drawOdd ?? '-'} / ${match.awayOdd ?? '-'}");
-    }
-
-    if (match.isLive) {
-      confidence -= 5;
-      reasons.add("Élő meccs státusz: A pillanatnyi események módosíthatják az xG értéket.");
+      reasons.add("Magas értékű Value Bet opció.");
     }
 
     confidence = confidence.clamp(0, 100);
 
-    final String recommendation;
-    if (score >= 93) {
-      recommendation = "Hazai győzelem és több mint 2.5 gól (1 & Over 2.5)";
-    } else if (score >= 87) {
-      recommendation = "Mindkét csapat gólt szerez (BTTS: Igen)";
-    } else if (score >= 82) {
-      recommendation = "1X (Hazai győzelem vagy Döntetlen)";
-    } else {
-      recommendation = "Óvatos tipp: 2.5 gól alatt (Under 2.5)";
-    }
+    final String recommendation = score >= 93
+        ? "Hazai győzelem & Over 2.5"
+        : score >= 87
+            ? "BTTS: Igen"
+            : "1X (Hazai vagy X)";
 
     return AiAnalysisResult(
       score: score,
@@ -102,7 +85,7 @@ class AiEngineService {
     );
   }
 
-  static String recommendation(MatchModel match) => analyzeMatch(match).recommendation;
-  static int confidence(MatchModel match) => analyzeMatch(match).confidence;
-  static List<String> reasons(MatchModel match) => analyzeMatch(match).reasons;
+  String recommendation(MatchModel match) => analyzeMatch(match).recommendation;
+  int confidence(MatchModel match) => analyzeMatch(match).confidence;
+  List<String> reasons(MatchModel match) => analyzeMatch(match).reasons;
 }
