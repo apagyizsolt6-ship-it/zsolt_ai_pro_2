@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../widgets/match_detail/ai_analysis_card.dart';
 import '../widgets/match_detail/form_card.dart';
@@ -8,7 +9,7 @@ import '../widgets/match_detail/stats_card.dart';
 
 /// ===========================================
 /// ZSOLT AI PRO
-/// Version: v2.2.0
+/// Version: v2.3.0
 /// File: match_detail_screen.dart
 /// ===========================================
 
@@ -16,7 +17,7 @@ class MatchDetailScreen extends StatelessWidget {
   final String league;
   final String homeTeam;
   final String awayTeam;
-  final String kickoff;
+  final DateTime kickoff;
   final int aiScore;
   final bool isValueBet;
 
@@ -32,6 +33,9 @@ class MatchDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final kickoffText =
+        DateFormat('yyyy-MM-dd HH:mm').format(kickoff.toLocal());
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Mérkőzés elemzése"),
@@ -84,7 +88,7 @@ class MatchDetailScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      kickoff,
+                      kickoffText,
                       style: const TextStyle(
                         color: Colors.blueGrey,
                       ),
