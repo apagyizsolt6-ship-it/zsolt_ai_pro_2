@@ -1,184 +1,282 @@
-/*
-===========================================
-ZSOLT AI PRO
-Version: v2.0.1 (Javított AI Motor)
-File: ai_engine_service.dart
-===========================================
-*/
+import 'package:flutter/material.dart';
+import '../../models/match_model.dart';
+import '../../services/ai_engine_service.dart';
+import '../../screens/match_detail_screen.dart';
 
-import 'dart:math';
-import '../models/ai_analysis_result.dart';
-import '../models/match_model.dart';
+/// ===========================================
+/// ZSOLT AI PRO
+/// Version: v2.0.0
+/// File: next_matches_card.dart (Aktív AI Motor integrációval)
+/// ===========================================
 
-class AiEngineService {
-  const AiEngineService();
+class NextMatchesCard extends StatelessWidget {
+  final List<MatchModel> matches;
+  final VoidCallback? onViewAllPressed;
 
-  /// Intelligens AI pontszám generálás, ha a meccs adatai ezt nem tartalmazzák (0)
-  int _resolveScore(MatchModel match) {
-    if (match.aiScore > 0) return match.aiScore;
-    
-    // Intelligens determinisztikus generálás a csapatnevek alapján (78% - 97%)
-    final seedSum = match.homeTeam.codeUnits.fold(0, (a, b) => a + b) +
-                    match.awayTeam.codeUnits.fold(0, (a, b) => a + b) +
-                    match.league.codeUnits.fold(0, (a, b) => a + b);
-    final random = Random(seedSum.toInt());
-    return 78 + random.nextInt(20);
-  }
+  const NextMatchesCard({
+    super.key,
+    required this.matches,
+    this.onViewAllPressed,
+  });
 
-  /// Value Bet intelligens meghatározása
-  bool _resolveValueBet(MatchModel match, int score) {
-    if (match.valueBet) return true;
-    final seed = match.homeTeam.length + match.awayTeam.length + score;
-    return seed % 3 == 0 || score >= 91;
-  }
-
-  AiAnalysisResult analyzeMatch(MatchModel match) {
-    int score = _resolveScore(match);
-    bool valueBet = _resolveValueBet(match, score);
-
-    int confidence = 50;
-    final List<String> reasons = [];
-
-    //==========================================
-    // AI SCORE
-    //==========================================
-
-    if (score >= 90) {
-      confidence += 35;
-      reasons.add("Kiemelkedő AI pontszám és statisztikai dominancia");
-    } else if (score >= 80) {
-      confidence += 25;
-      reasons.add("Erős AI elemzés és stabil xG mutatók");
-    } else if (score >= 70) {
-      confidence += 15;
-      reasons.add("Jó AI értékelés és kiegyensúlyozott esélyek");
-    } else {
-      confidence += 5;
-      reasons.add("Közepes AI értékelés, óvatosabb kimenetel");
-    }
-
-    //==========================================
-    // VALUE BET
-    //==========================================
-
-    if (valueBet) {
-      confidence += 10;
-      reasons.add("Értékes fogadási opció (Value Bet detektálva)");
-    }
-
-    //==========================================
-    // ÉLŐ MÉRKŐZÉS
-    //==========================================
-
-    if (match.isLive) {
-      confidence -= 5;
-      reasons.add("Élő mérkőzés (a dinamikus események miatt a kockázat változhat)");
-    }
-
-    //==========================================
-    // BIZALMI SZINT
-    //==========================================
-
-    confidence = confidence.clamp(0, 100);
-
-    final String recommendation;
-
-    if (score >= 93) {
-      recommendation = "Hazai győzelem & Over 2.5 gól";
-    } else if (score >= 88) {
-      recommendation = "Mindkét csapat gólt szerez (BTTS)";
-    } else if (score >= 82) {
-      recommendation = "Hazai csapat nyer vagy X (1X)";
-    } else {
-      recommendation = "Óvatos / Szoros mérkőzés";
-    }
-
-    //==========================================
-    // AI AJÁNLÁS INDOKLÁSA
-    //==========================================
-
-    if (score >= 90) {
-      reasons.add("A mérkőzés formája és H2H statisztikái alapján kiemelkedő esély.");
-    }
-
-    if (score >= 85 && valueBet) {
-      reasons.add("Az AI predikció és a Value Bet együttesen magas értéket képvisel.");
-    }
-
-    if (match.homeOdd != null && match.homeOdd! <= 2.00) {
-      reasons.add("A hazai győzelem szorzója kiemelkedően kedvező.");
-    }
-
-    if (match.drawOdd != null && match.drawOdd! >= 3.50) {
-      reasons.add("Magas döntetlen szorzó extra értékkel.");
-    }
-
-    if (match.hasOdds) {
-      confidence += 5;
-    } else {
-      reasons.add("Algoritmikus becsült odds adatok.");
-    }
-
-    confidence = confidence.clamp(0, 100);
-
-    //==========================================
-    // AJÁNLÁS FINOMÍTÁSA
-    //==========================================
-
-    if (confidence >= 90 && valueBet) {
-      reasons.add("Kiemelten ajánlott prémium fogadási lehetőség.");
-    } else if (confidence >= 80) {
-      reasons.add("Magas bizalmi szintű AI tipp.");
-    } else {
-      reasons.add("Megfelelő választás lehet mérsékelt téttel.");
-    }
-
-    return AiAnalysisResult(
-      score: score,
-      confidence: confidence,
-      recommendation: recommendation,
-      isValueBet: valueBet,
-      reasons: reasons,
+  void _openMatch(BuildContext context, MatchModel m, int score, bool valueBet) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MatchDetailScreen(
+          league: m.league,
+          homeTeam: m.homeTeam,
+          awayTeam: m.awayTeam,
+          kickoff: '${m.kickoff.toLocal().hour.toString().padLeft(2, '0')}:${m.kickoff.toLocal().minute.toString().padLeft(2, '0')}',
+          aiScore: score,
+          isValueBet: valueBet,
+        ),
+      ),
     );
   }
 
-  //==========================================
-  // GYORS AI PONTSZÁM
-  //==========================================
+  @override
+  Widget build(BuildContext context) {
+    const aiEngine = AiEngineService();
+    final displayMatches = matches.take(3).toList();
 
-  int calculateScore(MatchModel match) {
-    return analyzeMatch(match).score;
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+      ),
+      color: const Color(0xFF161B22),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Row(
+                  children: [
+                    Icon(
+                      Icons.sports_soccer_rounded,
+                      color: Color(0xFF3B82F6),
+                      size: 24,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'KÖVETKEZŐ MÉRKŐZÉSEK',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.6,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  '${matches.length} meccs',
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            displayMatches.isEmpty
+                ? const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    child: Center(
+                      child: Text(
+                        'Nincsenek elérhető mérkőzések',
+                        style: TextStyle(color: Colors.white54),
+                      ),
+                    ),
+                  )
+                : Column(
+                    children: displayMatches.map((m) {
+                      final aiScore = aiEngine.calculateScore(m);
+                      final isValue = aiEngine.isValueBet(m);
+                      final timeStr = '${m.kickoff.toLocal().hour.toString().padLeft(2, '0')}:${m.kickoff.toLocal().minute.toString().padLeft(2, '0')}';
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _matchTile(
+                          context,
+                          match: m,
+                          score: aiScore,
+                          valueBet: isValue,
+                          league: m.league,
+                          home: m.homeTeam,
+                          away: m.awayTeam,
+                          time: timeStr,
+                          aiScore: aiScore,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+
+            const SizedBox(height: 8),
+
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF3B82F6),
+                ),
+                onPressed: onViewAllPressed,
+                icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                label: const Text(
+                  'Összes meccs',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
-  //==========================================
-  // GYORS AJÁNLÁS
-  //==========================================
+  Widget _matchTile(
+    BuildContext context, {
+    required MatchModel match,
+    required int score,
+    required bool valueBet,
+    required String league,
+    required String home,
+    required String away,
+    required String time,
+    required int aiScore,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () => _openMatch(context, match, score, valueBet),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: Colors.white.withValues(alpha: 0.03),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.sports_soccer,
+                color: Color(0xFF3B82F6),
+                size: 22,
+              ),
+            ),
 
-  String recommendation(MatchModel match) {
-    return analyzeMatch(match).recommendation;
-  }
+            const SizedBox(width: 12),
 
-  //==========================================
-  // GYORS BIZALMI SZINT
-  //==========================================
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    league,
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
 
-  int confidence(MatchModel match) {
-    return analyzeMatch(match).confidence;
-  }
+                  const SizedBox(height: 3),
 
-  //==========================================
-  // VALUE BET
-  //==========================================
+                  Text(
+                    '$home vs $away',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Colors.white,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
 
-  bool isValueBet(MatchModel match) {
-    return analyzeMatch(match).isValueBet;
-  }
+                  const SizedBox(height: 6),
 
-  //==========================================
-  // INDOKLÁS
-  //==========================================
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'AI $aiScore%',
+                          style: const TextStyle(
+                            color: Color(0xFF60A5FA),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ),
 
-  List<String> reasons(MatchModel match) {
-    return analyzeMatch(match).reasons;
+                      if (valueBet) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            'VALUE',
+                            style: TextStyle(
+                              color: Colors.greenAccent,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 8),
+
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                time,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF60A5FA),
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
