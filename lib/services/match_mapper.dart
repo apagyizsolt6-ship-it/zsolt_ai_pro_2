@@ -27,7 +27,7 @@ class MatchMapper {
       DateTime kickoff;
 
       try {
-        kickoff = DateTime.parse('$date $time');
+        kickoff = DateTime.parse('${date}T${time}Z').toLocal();
 
         log('Parsed kickoff : $kickoff');
         log('Local kickoff  : ${kickoff.toLocal()}');
