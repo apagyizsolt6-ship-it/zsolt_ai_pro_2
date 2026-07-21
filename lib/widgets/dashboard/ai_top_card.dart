@@ -20,7 +20,7 @@ class AiTopCard extends StatelessWidget {
           league: m.league,
           homeTeam: m.homeTeam,
           awayTeam: m.awayTeam,
-          kickoff: '${m.kickoff.toLocal().hour.toString().padLeft(2, '0')}:${m.kickoff.toLocal().minute.toString().padLeft(2, '0')}',
+          kickoff: m.kickoff, // JAVÍTVA: DateTime átadva string helyett
           aiScore: score,
           isValueBet: valueBet,
         ),
@@ -47,9 +47,8 @@ class AiTopCard extends StatelessWidget {
     }
 
     final m = match!;
-    // STATIKUS HIVÁS
-    final aiScore = AiEngineService.calculateScore(m);
-    final isValue = AiEngineService.isValueBet(m);
+    final aiScore = m.aiScore > 0 ? m.aiScore : const AiEngineService().calculateScore(m);
+    final isValue = const AiEngineService().isValueBet(m);
 
     return Container(
       decoration: BoxDecoration(
