@@ -1,6 +1,6 @@
 /*
 ===========================================
-ZSOLT AI PRO - ACTIVE LEAGUES SERVICE (ERŐSÍTETT FOCI SZŰRŐ + ELREJTÉS)
+ZSOLT AI PRO - ACTIVE LEAGUES SERVICE (DINAMIKUS DÁTUMOKkal)
 File: lib/services/active_leagues_service.dart
 ===========================================
 */
@@ -9,6 +9,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 import '../models/match_model.dart';
 import 'api_service.dart';
 import 'match_mapper.dart';
@@ -21,7 +22,6 @@ class ActiveLeaguesService {
     return File('${dir.path}/matches_cache.json');
   }
 
-  // --- REJTETT / LETILTOTT LIGÁK KEZELÉSE ---
   static const String _hiddenLeaguesKey = 'hidden_leagues_list';
 
   Future<List<String>> getHiddenLeagues() async {
@@ -69,7 +69,7 @@ class ActiveLeaguesService {
     String clean = name
         .replaceAll("Division", "Osztály")
         .replaceAll("League", "Liga")
-        .replaceAll("Friendlies", "Barátságos mérkőzések")
+        .replaceAll("Friendlies", "Barátságos klubmérkőzések")
         .replaceAll("Premier", "Premier")
         .replaceAll("National", "Nemzeti")
         .replaceAll("Supercopa", "Szuperkupa")
@@ -89,8 +89,18 @@ class ActiveLeaguesService {
       } catch (e) { log("Cache hiba: $e"); }
     }
 
-    log("Dátum alapú adatgyűjtés indul...");
-    final dates = ['2026-07-20', '2026-07-21', '2026-07-22'];
+    log("Dinamikus dátum alapú adatgyűjtés indul...");
+    
+    // DINAMIKUS GENERÁLÁS: A mai nap, holnap és holnapután (vagy akár 3 napra előre/hátra)
+    final now = DateTime.now();
+    final dates = List.generate(3, (index) {
+      final targetDate = now.add(Duration(days: index - 1)); // Tegnap, Ma, Holnap (vagy állítsd át 0-tól, ha csak ma + 2 nap kell)
+      return DateFormat('yyyy-MM-dd').format(targetDate);
+    });
+
+    // Ha inkább a mától számított 3 napot szeretnéd (Ma, Holnap, Holnapután), használd ezt:
+    // final dates = List.generate(3, (index) => DateFormat('yyyy-MM-dd').format(now.add(Duration(days: index))));
+
     final results = await Future.wait(dates.map((d) => _api.getMatchesByDate(d)));
 
     final List<MatchModel> allMatches = [];
@@ -103,7 +113,6 @@ class ActiveLeaguesService {
           final lowerHome = m.homeTeam.toLowerCase();
           final lowerAway = m.awayTeam.toLowerCase();
 
-          // MEGVÁLTOZTATOTT ÉS MEGERŐSÍTETT FOCI SZŰRŐ (Kiszűri a krikettet, baseballt, stb.)
           final bool isNotFootball = 
               lowerLeague.contains('baseball') ||
               lowerLeague.contains('mlb') ||
@@ -119,7 +128,6 @@ class ActiveLeaguesService {
               lowerLeague.contains('esports') ||
               lowerLeague.contains('béisbol') ||
               lowerLeague.contains('international') ||
-              // Ismert baseball stadionok/csapatok szűrése neveik alapján
               lowerHome.contains('stripers') || lowerAway.contains('stripers') ||
               lowerHome.contains('bisons') || lowerAway.contains('bisons') ||
               lowerHome.contains('red sox') || lowerAway.contains('red sox') ||
