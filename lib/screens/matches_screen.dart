@@ -19,23 +19,26 @@ class _MatchesScreenState extends State<MatchesScreen> {
   bool _loading = true;
   String? _selectedDate;
   MatchFilter _selectedFilter = MatchFilter.all;
-
-  // OKOS AUTOMATA: A bajnokság neveit itt tisztítjuk meg
-  String _formatLeagueName(String name) {
-    String clean = name
-        .replaceAll("Division", "Osztály")
-        .replaceAll("League", "Liga")
-        .replaceAll("Friendlies", "Barátságos mérkőzések")
-        .replaceAll("Premier", "Premier")
-        .replaceAll("National", "Nemzeti")
-        .trim();
-    return clean.toUpperCase();
-  }
+  
+  // Kereső vezérlő
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = "";
 
   @override
   void initState() {
     super.initState();
     _loadMatches();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.toLowerCase();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadMatches({bool force = false}) async {
@@ -52,18 +55,86 @@ class _MatchesScreenState extends State<MatchesScreen> {
     });
   }
 
+  // --- 1. PROFI AUTOMATA MAGYARÍTÓ & FOCI SZŰRŐ RENDSZER ---
+  bool _isFootball(String leagueName) {
+    final lower = leagueName.toLowerCase();
+    // Kizáró szűrők: ha ezeket tartalmazza, nem foci
+    if (lower.contains('wnba') || 
+        lower.contains('basketball') || 
+        lower.contains('baseball') || 
+        lower.contains('béisbol') || 
+        lower.contains('tennis') || 
+        lower.contains('hockey') || 
+        lower.contains('esports') ||
+        lower.contains('nba')) {
+      return false;
+    }
+    return true;
+  }
+
+  String _formatLeagueName(String name) {
+    // Pontos szótári fordítások a leggyakoribb ligákra
+    final Map<String, String> dictionary = {
+      "Club Friendlies": "Barátságos klubmérkőzések",
+      "Argentinian Primera C": "Argentin Primera C",
+      "Copa Paulista": "Copa Paulista",
+      "Argentinian Primera B Nacional": "Argentin Primera B Nacional",
+      "Argentinian Torneo Promocional Amateur": "Argentin Torneo Promocional Amateur",
+      "Bulgarian First League": "Bolgár első osztály",
+      "Romanian Liga I": "Román Liga I",
+      "Lebanon Premier League": "Libanoni Premier League",
+      "Bolivian Primera División": "Bolíviai Primera División",
+      "Ecuadorian Serie A": "Ecuadori Serie A",
+      "Icelandic 1 Deild Karla": "Izlandi 1. Deild Karla",
+      "Icelandic Úrvalsdeild Karla": "Izlandi Úrvalsdeild Karla",
+      "Uruguayan Primera Division": "Uruguayi Primera Division",
+    };
+
+    if (dictionary.containsKey(name)) {
+      return dictionary[name]!.toUpperCase();
+    }
+
+    // Automata tisztítás és fordítás maradványokra
+    String clean = name
+        .replaceAll("Division", "Osztály")
+        .replaceAll("League", "Liga")
+        .replaceAll("Friendlies", "Barátságos mérkőzések")
+        .replaceAll("Premier", "Premier")
+        .replaceAll("National", "Nemzeti")
+        .replaceAll("Supercopa", "Szuperkupa")
+        .replaceAll("Cup", "Kupa")
+        .trim();
+        
+    return clean.toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final availableDates = _matches.map((m) => DateFormat('yyyy-MM-dd').format(m.kickoff.toLocal())).toSet().toList()..sort();
+    // Csak a foci meccsek szűrése a teljes listából
+    final footballMatches = _matches.where((m) => _isFootball(m.league)).toList();
+
+    final availableDates = footballMatches.map((m) => DateFormat('yyyy-MM-dd').format(m.kickoff.toLocal())).toSet().toList()..sort();
     
-    final filtered = _matches.where((m) {
+    // Szűrés dátum, státusz, fül (filter) és a keresőmező alapján
+    final filtered = footballMatches.where((m) {
       final dateMatch = DateFormat('yyyy-MM-dd').format(m.kickoff.toLocal()) == _selectedDate;
       final isNotFinished = m.status != MatchStatus.finished;
+      
       bool filterMatch = true;
       if (_selectedFilter == MatchFilter.aiTop) filterMatch = m.aiScore >= 90;
       if (_selectedFilter == MatchFilter.valueBet) filterMatch = m.valueBet;
       if (_selectedFilter == MatchFilter.live) filterMatch = m.status == MatchStatus.live;
-      return dateMatch && isNotFinished && filterMatch;
+
+      // Kereső szűrés (Csapatnevekre vagy bajnokságra)
+      bool searchMatch = true;
+      if (_searchQuery.isNotEmpty) {
+        final home = m.homeTeam.toLowerCase();
+        final away = m.awayTeam.toLowerCase();
+        final league = m.league.toLowerCase();
+        searchMatch = home.contains(_searchQuery) || away.contains(_searchQuery) || league.contains(_searchQuery);
+      }
+
+      return dateMatch && isNotFinished && filterMatch && searchMatch;
     }).toList();
 
     final Map<String, List<MatchModel>> grouped = {};
@@ -75,46 +146,115 @@ class _MatchesScreenState extends State<MatchesScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0E1117),
       appBar: AppBar(title: const Text("Mérkőzések"), backgroundColor: const Color(0xFF0E1117)),
-      body: _loading ? const Center(child: CircularProgressIndicator()) : Column(
-        children: [
-          _buildDateSelector(availableDates),
-          _buildFilters(),
-          Expanded(child: ListView(
-            children: grouped.entries.map((entry) {
-              final sortedMatches = entry.value..sort((a, b) => b.status.index.compareTo(a.status.index));
-              return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Padding(padding: const EdgeInsets.all(16), child: Text(entry.key, style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 14))),
-                ...sortedMatches.map((m) => MatchCard(
-                  homeTeam: m.homeTeam,
-                  awayTeam: m.awayTeam,
-                  kickoff: m.kickoff,
-                  aiScore: m.aiScore,
-                  status: m.status,
-                  isValueBet: m.valueBet,
-                  league: entry.key, // <--- ITT ÁTADJUK A LIGA NEVÉT A RÉSZLETES OLDALHOZ
-                )),
-              ]);
-            }).toList(),
-          )),
-        ],
-      ),
+      body: _loading 
+        ? const Center(child: CircularProgressIndicator()) 
+        : Column(
+            children: [
+              // 2. KERESŐMEZŐ
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: TextField(
+                  controller: _searchController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: "Keresés csapat vagy bajnokság szerint...",
+                    hintStyle: const TextStyle(color: Colors.white54),
+                    prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                    filled: true,
+                    fillColor: Colors.white.withValues(alpha: 0.05),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                ),
+              ),
+
+              // Dátum sáv
+              _buildDateSelector(availableDates),
+              
+              // Szűrők
+              _buildFilters(),
+
+              // Meccsek listája
+              Expanded(
+                child: grouped.isEmpty 
+                  ? const Center(child: Text("Nincs találat a megadott feltételekkel", style: TextStyle(color: Colors.white54)))
+                  : ListView(
+                      children: grouped.entries.map((entry) {
+                        final sortedMatches = entry.value..sort((a, b) => b.status.index.compareTo(a.status.index));
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start, 
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(16), 
+                              child: Text(
+                                entry.key, 
+                                style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 14)
+                              ),
+                            ),
+                            ...sortedMatches.map((m) => MatchCard(
+                              homeTeam: m.homeTeam,
+                              awayTeam: m.awayTeam,
+                              kickoff: m.kickoff,
+                              aiScore: m.aiScore,
+                              status: m.status,
+                              isValueBet: m.valueBet,
+                              league: entry.key,
+                            )),
+                          ],
+                        );
+                      }).toList(),
+                    ),
+              ),
+            ],
+          ),
     );
   }
 
-  Widget _buildDateSelector(List<String> dates) => SizedBox(height: 70, child: ListView.separated(
-    padding: const EdgeInsets.symmetric(horizontal: 16), scrollDirection: Axis.horizontal, itemCount: dates.length,
-    separatorBuilder: (_, __) => const SizedBox(width: 10),
-    itemBuilder: (context, i) => GestureDetector(onTap: () => setState(() => _selectedDate = dates[i]), child: Container(padding: const EdgeInsets.symmetric(horizontal: 20), decoration: BoxDecoration(color: _selectedDate == dates[i] ? Colors.blue : Colors.white10, borderRadius: BorderRadius.circular(15)), alignment: Alignment.center, child: Text(dates[i], style: const TextStyle(color: Colors.white)))),
-  ));
+  Widget _buildDateSelector(List<String> dates) => SizedBox(
+        height: 60, 
+        child: ListView.separated(
+          padding: const EdgeInsets.symmetric(horizontal: 16), 
+          scrollDirection: Axis.horizontal, 
+          itemCount: dates.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 10),
+          itemBuilder: (context, i) => GestureDetector(
+            onTap: () => setState(() => _selectedDate = dates[i]), 
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20), 
+              decoration: BoxDecoration(
+                color: _selectedDate == dates[i] ? Colors.blue : Colors.white10, 
+                borderRadius: BorderRadius.circular(15)
+              ), 
+              alignment: Alignment.center, 
+              child: Text(dates[i], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ),
+      );
 
-  Widget _buildFilters() => Padding(padding: const EdgeInsets.all(16), child: Row(children: [
-    _chip("Összes", MatchFilter.all), const SizedBox(width: 10),
-    _chip("AI TOP", MatchFilter.aiTop), const SizedBox(width: 10),
-    _chip("Élő", MatchFilter.live),
-  ]));
+  Widget _buildFilters() => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), 
+        child: Row(
+          children: [
+            _chip("Összes", MatchFilter.all), const SizedBox(width: 10),
+            _chip("AI TOP", MatchFilter.aiTop), const SizedBox(width: 10),
+            _chip("Élő", MatchFilter.live),
+          ],
+        ),
+      );
 
   Widget _chip(String text, MatchFilter filter) => GestureDetector(
-    onTap: () => setState(() => _selectedFilter = filter),
-    child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), decoration: BoxDecoration(color: _selectedFilter == filter ? Colors.blue : Colors.white10, borderRadius: BorderRadius.circular(15)), child: Text(text, style: const TextStyle(color: Colors.white))),
-  );
+        onTap: () => setState(() => _selectedFilter = filter),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), 
+          decoration: BoxDecoration(
+            color: _selectedFilter == filter ? Colors.blue : Colors.white10, 
+            borderRadius: BorderRadius.circular(15)
+          ), 
+          child: Text(text, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        ),
+      );
 }
