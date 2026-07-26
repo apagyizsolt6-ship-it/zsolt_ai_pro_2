@@ -47,8 +47,8 @@ class AiTopCard extends StatelessWidget {
     }
 
     final m = match!;
-    final aiScore = m.aiScore > 0 ? m.aiScore : const AiEngineService().calculateScore(m);
-    final isValue = const AiEngineService().isValueBet(m);
+    final aiScore = m.aiScore > 0 ? m.aiScore : AiEngineService.calculateScore(m);
+    final isValue = AiEngineService.isValueBet(m);
 
     return Container(
       decoration: BoxDecoration(
