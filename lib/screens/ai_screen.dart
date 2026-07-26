@@ -215,7 +215,7 @@ class AiScreen extends StatelessWidget {
               league: 'AI TOP',
               homeTeam: home,
               awayTeam: away,
-              kickoff: 'Ma 20:45',
+              kickoff: DateTime.now(),
               aiScore: score,
               isValueBet: valueBet,
             ),
